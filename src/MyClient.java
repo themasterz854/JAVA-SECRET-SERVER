@@ -11,7 +11,7 @@ class Sender1 extends Thread{
     {       try {
         DataOutputStream dout = new DataOutputStream(s.getOutputStream());
         BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-        String str = " ";
+        String str ;
         while(true)
         {
             str=br.readLine();
@@ -38,7 +38,7 @@ class Receiver1 extends Thread{
     }
     public void run() {
         try {
-            String str = "a";
+            String str ;
             DataInputStream din = new DataInputStream(s.getInputStream());
             while (true) {
                 str = din.readUTF();
