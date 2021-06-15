@@ -26,9 +26,17 @@ class Sender extends Thread{
         try {
             dout = new DataOutputStream(ReceiverSocket.getOutputStream());
             din = new DataInputStream(SenderSocket.getInputStream());
-            while(!stro.equals("exit")) {
-
+            while(true) {
                 stro = din.readUTF();
+                if(stro.equals("exit"))
+                {
+                    dout = new DataOutputStream(SenderSocket.getOutputStream());
+                    dout.writeUTF("exit");
+                    dout.flush();
+                    dout.close();
+                    din.close();
+                    break;
+                }
                 dout.writeUTF(stro);
                 dout.flush();
             }
@@ -56,9 +64,14 @@ class Receiver extends Thread {
             dout.writeUTF("Your id is "+ Integer.toString(sc.id));
             dout.flush();
             String[] data;
-            while (!str.equals("exit")) {
+            while (true) {
                 str = din.readUTF();
                 System.out.println("client "+ sc.id+" says: " + str);
+                if(str.equals("exit"))
+                {
+                    dout.writeUTF("exit");
+                    break;
+                }
                 if(str.equals("list"))
                 {
                     for(i=0;so[i].id != -1;i++) {
@@ -79,15 +92,14 @@ class Receiver extends Thread {
                             {
                                 Sender sen = new Sender(so[i].s,sc.s);
                                 sen.start();
-                                sen.join();
+                                break;
                             }
                         }
                     }
                 }
-                sleep(2000);
             }
             din.close();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

@@ -12,14 +12,21 @@ class Sender1 extends Thread{
         DataOutputStream dout = new DataOutputStream(s.getOutputStream());
         BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
         String str = " ";
-        while(!str.equals("exit"))
+        while(true)
         {
             str=br.readLine();
             dout.writeUTF(str);
             dout.flush();
+            if(str.equals("exit"))
+            {   dout = new DataOutputStream(s.getOutputStream());
+                dout.writeUTF("exit");
+                sleep(3000);
+                dout.close();
+                break;
+            }
         }
-        dout.close();
-    } catch (IOException e) {
+
+    } catch (IOException | InterruptedException e) {
         e.printStackTrace();
     }
     }
@@ -33,11 +40,15 @@ class Receiver1 extends Thread{
         try {
             String str = "a";
             DataInputStream din = new DataInputStream(s.getInputStream());
-            while (!str.equals("exit")) {
+            while (true) {
                 str = din.readUTF();
+                if(str.equals("exit"))
+                {
+                    break;
+                }
                 System.out.println("server says: " + str);
             }
-            din.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
