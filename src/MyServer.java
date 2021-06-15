@@ -19,7 +19,7 @@ class Sender extends Thread{
 
     }
     public void run(){
-        String stro = " ";
+        String stro ;
         DataOutputStream dout;
         DataInputStream din;
         System.out.println("ready to chat");
@@ -58,10 +58,10 @@ class Receiver extends Thread {
         try {
             int i;
             int chatid;
-            String str = "a";
+            String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
-            dout.writeUTF("Your id is "+ Integer.toString(sc.id));
+            dout.writeUTF("Your id is "+ sc.id);
             dout.flush();
             String[] data;
             while (true) {
@@ -77,7 +77,7 @@ class Receiver extends Thread {
                     for(i=0;so[i].id != -1;i++) {
                         if(so[i].id == sc.id)
                             continue;
-                        dout.writeUTF(Integer.toString(so[i].id)+" ");
+                        dout.writeUTF(so[i].id+" ");
                         dout.flush();
                     }
                 }
@@ -86,7 +86,7 @@ class Receiver extends Thread {
                     if(data[0].equals("chat"))
                     {
                         chatid = Integer.parseInt(data[1]);
-                        for(i=0;so[i].id != -1 && i< so.length;i++)
+                        for(i=0;(so[i].id != -1) && (i< so.length);i++)
                         {
                             if(so[i].id == chatid)
                             {
@@ -142,5 +142,6 @@ class MyServer {
         ServerSocket ss = new ServerSocket(4545);
         Connector con = new Connector(ss,so);
         con.start();
+        con.join();
     }
 }
