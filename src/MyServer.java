@@ -1,6 +1,6 @@
 import java.net.*;
 import java.io.*;
-import java.awt.*;
+
 class CustomSocket{
     Socket s;
     int id;
