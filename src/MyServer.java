@@ -126,6 +126,7 @@ class Connector extends Thread{
             }
             Receiver res = new Receiver(so[i],i,so);
             res.start();
+            System.out.println("Client connected");
             i++;
         }
     }
