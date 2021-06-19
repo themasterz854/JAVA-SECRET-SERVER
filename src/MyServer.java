@@ -61,8 +61,6 @@ class Receiver extends Thread {
             String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
-            dout.writeUTF("Your id is "+ sc.id);
-            dout.flush();
             String[] data;
             while (true) {
                 str = din.readUTF();
@@ -77,9 +75,12 @@ class Receiver extends Thread {
                     for(i=0;so[i].id != -1;i++) {
                         if(so[i].id == sc.id)
                             continue;
-                        dout.writeUTF(so[i].id+" ");
+                        dout.writeUTF(Integer.toString(so[i].id) );
                         dout.flush();
                     }
+                    System.out.println("end of list");
+                    dout.writeUTF("end of list");
+                    dout.flush();
                 }
                 else {
                     data = str.split(" ");
