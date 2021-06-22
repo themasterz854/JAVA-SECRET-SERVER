@@ -14,7 +14,6 @@ class Sender1 extends Thread{
         String str ;
         while(true)
         {
-            dout.writeUTF("NOPE");
             str=br.readLine();
             dout.writeUTF(str);
             dout.flush();
@@ -42,9 +41,7 @@ class Receiver1 extends Thread{
             String str ;
             DataInputStream din = new DataInputStream(s.getInputStream());
             DataOutputStream dout = new DataOutputStream(s.getOutputStream());
-            DataOutputStream dout2 = new DataOutputStream(s.getOutputStream());
             while (true) {
-                dout.writeUTF("HEY");
                 str = din.readUTF();
                 if(str.equals("exit"))
                 {

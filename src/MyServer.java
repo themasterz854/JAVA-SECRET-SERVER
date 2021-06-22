@@ -61,6 +61,12 @@ class Receiver extends Thread {
             String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
+            DataOutputStream[] RSdout = new DataOutputStream[10] ;
+            DataOutputStream curr_RSdout = null;
+            for(i=0;i<10;i++)
+            {
+                RSdout[i] = null;
+            }
             String[] data;
             while (true) {
                 str = din.readUTF();
@@ -75,7 +81,10 @@ class Receiver extends Thread {
                     for(i=0;so[i].id != -1;i++) {
                         if(so[i].id == sc.id)
                             continue;
-                        dout.writeUTF(Integer.toString(so[i].id) );
+                        if(RSdout[i] == null) {
+                            RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+                        }
+                        dout.writeUTF(Integer.toString(so[i].id));
                         dout.flush();
                     }
                     System.out.println("end of list");
@@ -87,15 +96,11 @@ class Receiver extends Thread {
                     if(data[0].equals("chat"))
                     {
                         chatid = Integer.parseInt(data[1]);
-                        for(i=0;(so[i].id != -1) && (i< so.length);i++)
-                        {
-                            if(so[i].id == chatid)
-                            {
-                                Sender sen = new Sender(so[i].s,sc.s);
-                                sen.start();
-                                break;
-                            }
-                        }
+                        curr_RSdout = RSdout[chatid];
+                    }
+                    else {
+                        curr_RSdout.writeUTF(str);
+                        curr_RSdout.flush();
                     }
                 }
             }
@@ -141,7 +146,7 @@ class MyServer {
         {
             so[i] = new CustomSocket();
         }
-        ServerSocket ss = new ServerSocket(4545);
+        ServerSocket ss = new ServerSocket(4848);
         Connector con = new Connector(ss,so);
         con.start();
         con.join();
