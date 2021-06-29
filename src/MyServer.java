@@ -69,38 +69,40 @@ class Receiver extends Thread {
             }
             String[] data;
             while (true) {
-                str = din.readUTF();
-                System.out.println("client "+ sc.id+" says: " + str);
-                if(str.equals("exit"))
-                {
-                    dout.writeUTF("exit");
-                    break;
-                }
-                if(str.equals("list"))
-                {
-                    for(i=0;so[i].id != -1;i++) {
-                        if(so[i].id == sc.id)
-                            continue;
-                        if(RSdout[i] == null) {
-                            RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+                synchronized (din) {
+                    str = din.readUTF();
+                    System.out.println("client " + sc.id + " says: " + str);
+                    if (str.equals("exit")) {
+                        dout.writeUTF("exit");
+                        break;
+                    }
+                    if (str.equals("list")) {
+                        for (i = 0; so[i].id != -1; i++) {
+                            if (so[i].id == sc.id)
+                                continue;
+                            if (RSdout[i] == null) {
+                                RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+                            }
+                            dout.writeUTF(Integer.toString(so[i].id));
+                            dout.flush();
                         }
-                        dout.writeUTF(Integer.toString(so[i].id));
+                        System.out.println("end of list");
+                        dout.writeUTF("end of list");
                         dout.flush();
-                    }
-                    System.out.println("end of list");
-                    dout.writeUTF("end of list");
-                    dout.flush();
-                }
-                else {
-                    data = str.split(" ");
-                    if(data[0].equals("chat"))
-                    {
-                        chatid = Integer.parseInt(data[1]);
-                        curr_RSdout = RSdout[chatid];
-                    }
-                    else {
-                        curr_RSdout.writeUTF(str);
-                        curr_RSdout.flush();
+                    } else {
+                        data = str.split(" ");
+                        if (data[0].equals("chat")) {
+                            chatid = Integer.parseInt(data[1]);
+                            curr_RSdout = RSdout[chatid];
+                        } else if (data[0].equals("others")) {
+                            data = str.split("others");
+                            dout.writeUTF(data[1]);
+                            dout.flush();
+                        } else {
+                            curr_RSdout.writeUTF(sc.id + " " + str);
+                            curr_RSdout.flush();
+                        }
+
                     }
                 }
             }
@@ -146,7 +148,7 @@ class MyServer {
         {
             so[i] = new CustomSocket();
         }
-        ServerSocket ss = new ServerSocket(4848);
+        ServerSocket ss = new ServerSocket(4949);
         Connector con = new Connector(ss,so);
         con.start();
         con.join();
