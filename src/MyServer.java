@@ -95,7 +95,8 @@ class Receiver extends Thread {
                             chatid = Integer.parseInt(data[1]);
                             curr_RSdout = RSdout[chatid];
                         } else if (data[0].equals("others")) {
-                            data = str.split("others");
+                            data = str.split("others ");
+                            System.out.println(data[1]);
                             dout.writeUTF(data[1]);
                             dout.flush();
                         } else {
