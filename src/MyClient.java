@@ -40,7 +40,6 @@ class Receiver1 extends Thread{
         try {
             String str ;
             DataInputStream din = new DataInputStream(s.getInputStream());
-            DataOutputStream dout = new DataOutputStream(s.getOutputStream());
             while (true) {
                 str = din.readUTF();
                 if(str.equals("exit"))

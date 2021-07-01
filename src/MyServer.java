@@ -63,6 +63,10 @@ class Receiver extends Thread {
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
             DataOutputStream[] RSdout = new DataOutputStream[10] ;
             DataOutputStream curr_RSdout = null;
+            FileOutputStream fos;
+            String FileName;
+            int FileSize;
+            byte[] ReceivedData;
             for(i=0;i<10;i++)
             {
                 RSdout[i] = null;
@@ -76,7 +80,21 @@ class Receiver extends Thread {
                         dout.writeUTF("exit");
                         break;
                     }
-                    if (str.equals("list")) {
+                    if(str.equals("file"))
+                    {
+                        FileName = din.readUTF();
+                        FileSize = Integer.parseInt(din.readUTF());
+                        System.out.println(FileSize);
+                        ReceivedData = new byte[FileSize];
+                        System.out.println(ReceivedData.length);
+                        din.readFully(ReceivedData);
+                        curr_RSdout.writeUTF("file");
+                        curr_RSdout.writeUTF(FileName);
+                        curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
+                        curr_RSdout.write(ReceivedData,0,ReceivedData.length);
+                        curr_RSdout.flush();
+                    }
+                    else if (str.equals("list")) {
                         for (i = 0; so[i].id != -1; i++) {
                             if (so[i].id == sc.id)
                                 continue;
