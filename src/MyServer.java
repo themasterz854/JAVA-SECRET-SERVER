@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.net.*;
 import java.io.*;
 import java.util.Calendar;
@@ -12,6 +14,7 @@ class CustomSocket{
     CustomSocket(){
         id = -1;
     }
+    String username;
 }
 class Encryptor{
 
@@ -98,7 +101,7 @@ class Encryptor{
     }
 }
 class Decryptor{
-    public String decrypt(String data){
+    public String decrypt(@NotNull String data){
         char[] decrypteddata = new char[300];
         int i,j,n,flag ,f;
         char c;
@@ -179,15 +182,19 @@ class Decryptor{
 class Manager extends Thread {
     CustomSocket sc;
     CustomSocket[] so;
+    int[] numberofsockets = new int[1];
 
-    Manager(CustomSocket sc, int id, CustomSocket[] so){
+    Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets){
         this.sc = sc;
         this.so = so;
         this.sc.id = id;
+        this.numberofsockets = numberofsockets;
+
     }
     public void run() {
         try {
             int i;
+            int count;
             int chatid;
             String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
@@ -209,7 +216,18 @@ class Manager extends Thread {
                     System.out.println("client " + sc.id + " says: " + str);
                     if (str.equals("exit")) {
                         dout.writeUTF("exit");
-                        break;
+                        synchronized (numberofsockets) {
+                            for (i = 0; i < numberofsockets[0]; i++) {
+                                if (so[i].id == sc.id) {
+                                    so[i].id = -1;
+                                    so[i].s = null;
+                                    RSdout[i] = null;
+                                    numberofsockets[0]--;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                     }
                     if(str.equals("file"))
                     {
@@ -226,18 +244,29 @@ class Manager extends Thread {
                         curr_RSdout.flush();
                     }
                     else if (str.equals("list")) {
-                        for (i = 0; so[i].id != -1; i++) {
-                            if (so[i].id == sc.id)
+                        count  =0;
+                        for (i = 0; count<numberofsockets[0]; i++) {
+
+                            if ((so[i].id == sc.id)) {
+                                count++;
                                 continue;
+                            }
+                            if(so[i].id == -1)
+                            {
+                                continue;
+                            }
                             if (RSdout[i] == null) {
                                 RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+
                             }
-                            dout.writeUTF(Integer.toString(so[i].id));
+                            dout.writeUTF(so[i].username +" "+Integer.toString(so[i].id));
                             dout.flush();
+                            count++;
                         }
                         System.out.println("end of list");
                         dout.writeUTF("end of list");
                         dout.flush();
+                        count = 0;
                     } else {
                         data = str.split(" ");
                         if (data[0].equals("chat")) {
@@ -257,7 +286,12 @@ class Manager extends Thread {
                 }
             }
             din.close();
-        } catch (IOException e) {
+        }
+        catch (SocketException e)
+        {
+            System.out.println(e);
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -273,6 +307,8 @@ class Connector extends Thread{
     String[] userdata;
     DataOutputStream dout;
     DataInputStream din;
+    Socket testsocket;
+    int[] numberofsockets = new int[1];
     Connector(ServerSocket ss,CustomSocket[] so) throws IOException {
         this.ss = ss;
         this.so = so;
@@ -280,6 +316,8 @@ class Connector extends Thread{
 
     public void run()
     {   int i =0;
+        numberofsockets[0] = 0;
+        int n = so.length;
         Decryptor dec = new Decryptor();
         Encryptor enc = new Encryptor();
         int flag = 0;
@@ -287,7 +325,15 @@ class Connector extends Thread{
         while(true) {
 
             try {
-                so[i].s = ss.accept();
+                testsocket = ss.accept();
+                for(i=0;i<n;i++)
+                {
+                   if(so[i].id == -1) {
+                       so[i].s = testsocket;
+                       break;
+                   }
+                }
+
                 dout = new DataOutputStream(so[i].s.getOutputStream());
                 din = new DataInputStream(so[i].s.getInputStream());
                 str = din.readUTF();
@@ -315,7 +361,12 @@ class Connector extends Thread{
                         }
                     }
                     if (flag == 1) {
-                        Manager res = new Manager(so[i], i, so);
+                        synchronized (numberofsockets) {
+                            numberofsockets[0]++;
+                        }
+                        so[i].username = filedata[0];
+                        Manager res = new Manager(so[i], i, so, numberofsockets);
+
                         res.start();
                         System.out.println("Client connected");
                         i++;
