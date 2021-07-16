@@ -24,9 +24,10 @@ class Encryptor{
     Calendar c1 = Calendar.getInstance();
     Date date = c1.getTime();
     long time ;
-    char[] encrypteddata = new char[900];
-
+    char[] encrypteddata ;
+    int pos;
     public String encrypt(String data){
+        encrypteddata = new char[900];
       time = date.getTime();
       int i,j=0,n,f;
       char c,en = 'a';
@@ -68,8 +69,14 @@ class Encryptor{
           {
               if(c >= 'a' && c <= 'z')
               {
-                  encrypteddata[j++] = random3.charAt((int) (time % 9));
+                  pos = (int) time % 9;
+                  if(pos< 0)
+                  {
+                      pos += 9;
+                  }
+                  encrypteddata[j++] = random3.charAt(pos);
                   time++;
+
               }
               if(c >= 'a' && c <= 'z')
               {
@@ -81,13 +88,23 @@ class Encryptor{
               }
               if(f >= 58  && f <67)
               {
-                  encrypteddata[j++] = random1.charAt((int) time % 7);
+                  pos = (int) time % 7;
+                  if(pos< 0)
+                  {
+                      pos += 7;
+                  }
+                  encrypteddata[j++] = random1.charAt((pos));
                   en = (char)(f-9);
                   time++;
               }
               else if(f >= 67 && f <=74)
               {
-                  encrypteddata[j++] = random2.charAt((int)time %7);
+                  pos = (int) time % 7;
+                  if(pos< 0)
+                  {
+                      pos += 7;
+                  }
+                  encrypteddata[j++] = random2.charAt(pos);
                   en = (char)(f - 18);
               }
               else
@@ -183,7 +200,7 @@ class Manager extends Thread {
     CustomSocket sc;
     CustomSocket[] so;
     int[] numberofsockets = new int[1];
-
+    File chatfile;
     Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets){
         this.sc = sc;
         this.so = so;
@@ -203,6 +220,9 @@ class Manager extends Thread {
             DataOutputStream curr_RSdout = null;
             FileOutputStream fos;
             String FileName;
+            Decryptor dec = new Decryptor();
+            Encryptor en = new Encryptor();
+
             int FileSize;
             byte[] ReceivedData;
             for(i=0;i<10;i++)
@@ -210,10 +230,16 @@ class Manager extends Thread {
                 RSdout[i] = null;
             }
             String[] data;
+            int encryptflag = 0;
             while (true) {
                 synchronized (din) {
                     str = din.readUTF();
                     System.out.println("client " + sc.id + " says: " + str);
+                    if(str.equals("enableencryption"))
+                    {
+                        encryptflag = 1;
+                        continue;
+                    }
                     if (str.equals("exit")) {
                         dout.writeUTF("exit");
                         synchronized (numberofsockets) {
@@ -269,6 +295,7 @@ class Manager extends Thread {
                         count = 0;
                     } else {
                         data = str.split(" ");
+
                         if (data[0].equals("chat")) {
                             chatid = Integer.parseInt(data[1]);
                             curr_RSdout = RSdout[chatid];
@@ -278,7 +305,10 @@ class Manager extends Thread {
                             dout.writeUTF(data[1]);
                             dout.flush();
                         } else {
-                            curr_RSdout.writeUTF(sc.id + " " + str);
+                            if(encryptflag == 1)
+                            curr_RSdout.writeUTF(sc.id + " " + en.encrypt(str));
+                            else
+                                curr_RSdout.writeUTF(sc.id + " " + str);
                             curr_RSdout.flush();
                         }
 
@@ -316,12 +346,14 @@ class Connector extends Thread{
 
     public void run()
     {   int i =0;
+        int j;
         numberofsockets[0] = 0;
         int n = so.length;
         Decryptor dec = new Decryptor();
         Encryptor enc = new Encryptor();
-        int flag = 0;
+        int flag = 1;
         String str,newusername,newpassword;
+        String[] onlineusers = new String[10];
         while(true) {
 
             try {
@@ -353,28 +385,40 @@ class Connector extends Thread{
                         data = filereader.nextLine();
                         data = dec.decrypt(data);
                         filedata = data.split(" ");
-                        if (filedata[0].equals(userdata[0]) && filedata[1].equals(userdata[1])) {
-                            dout.writeUTF("ok");
-                            dout.flush();
+                        if (filedata[0].equals(userdata[0]) && filedata[1].equals(userdata[1]) ) {
                             flag = 1;
+                            for(j=0;j<numberofsockets[0] ;j++) {
+                                if (filedata[0].equals(onlineusers[j])) {
+                                    dout.writeUTF("User already logged in");
+                                    dout.flush();
+                                    flag = 0;
+                                    break;
+                                }
+                            }
                             break;
+                        }
+                        else
+                        {
+                            flag =0;
                         }
                     }
                     if (flag == 1) {
                         synchronized (numberofsockets) {
                             numberofsockets[0]++;
+                            onlineusers[numberofsockets[0] - 1] = filedata[0];
                         }
                         so[i].username = filedata[0];
                         Manager res = new Manager(so[i], i, so, numberofsockets);
+                        dout.writeUTF("ok");
 
                         res.start();
                         System.out.println("Client connected");
                         i++;
                     } else {
-                        dout.writeUTF("not ok");
+                        dout.writeUTF("wrong username or password");
                         dout.flush();
                     }
-                    flag = 0;
+                    flag = 1;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
