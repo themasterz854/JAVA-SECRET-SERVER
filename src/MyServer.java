@@ -2,10 +2,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.*;
 import java.io.*;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Scanner;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.IntStream;
+import java.util.regex.Pattern;
 import static java.lang.Character.toLowerCase;
 
 class CustomSocket{
@@ -21,14 +20,13 @@ class Encryptor{
     String random1 = "!%*#(}]";
     String random2 = "@$^&)[\\";
     String random3 = "<>?:;_{|`";
-    Calendar c1 = Calendar.getInstance();
-    Date date = c1.getTime();
-    long time ;
     char[] encrypteddata ;
-    int pos;
     public String encrypt(String data){
-        encrypteddata = new char[900];
-      time = date.getTime();
+    Random random = new Random();
+    IntStream randomint = random.ints(10,0,9);
+    int[] randomarray = randomint.toArray();
+    int randomiterator = 0;
+    encrypteddata = new char[900];
       int i,j=0,n,f;
       char c,en = 'a';
       n = data.length();
@@ -65,17 +63,16 @@ class Encryptor{
           {
               en = '\"';
           }
+          else if(c == '\n' )
+          {
+              en = c;
+          }
           else
           {
               if(c >= 'a' && c <= 'z')
               {
-                  pos = (int) time % 9;
-                  if(pos< 0)
-                  {
-                      pos += 9;
-                  }
-                  encrypteddata[j++] = random3.charAt(pos);
-                  time++;
+
+                  encrypteddata[j++] = random3.charAt(randomarray[randomiterator++ % 10] % 8);
 
               }
               if(c >= 'a' && c <= 'z')
@@ -88,23 +85,14 @@ class Encryptor{
               }
               if(f >= 58  && f <67)
               {
-                  pos = (int) time % 7;
-                  if(pos< 0)
-                  {
-                      pos += 7;
-                  }
-                  encrypteddata[j++] = random1.charAt((pos));
+
+                  encrypteddata[j++] = random1.charAt(randomarray[randomiterator++ % 10] % 7);
                   en = (char)(f-9);
-                  time++;
               }
               else if(f >= 67 && f <=74)
               {
-                  pos = (int) time % 7;
-                  if(pos< 0)
-                  {
-                      pos += 7;
-                  }
-                  encrypteddata[j++] = random2.charAt(pos);
+
+                  encrypteddata[j++] = random2.charAt(randomarray[randomiterator++ % 10] % 7);
                   en = (char)(f - 18);
               }
               else
@@ -119,7 +107,7 @@ class Encryptor{
 }
 class Decryptor{
     public String decrypt(@NotNull String data){
-        char[] decrypteddata = new char[300];
+        char[] decrypteddata = new char[900];
         int i,j,n,flag ,f;
         char c;
         n = data.length();
@@ -128,6 +116,11 @@ class Decryptor{
         {
             flag = 0;
             c = data.charAt(i);
+            if (c == '\n')
+            {
+                decrypteddata[j++] = '\n';
+                continue;
+            }
             if(c == '\"')
             {
                 decrypteddata[j++] = ' ';
@@ -196,11 +189,18 @@ class Decryptor{
     }
 
 }
+class Sync{
+    Sync(){
+
+    }
+}
 class Manager extends Thread {
+
     CustomSocket sc;
     CustomSocket[] so;
-    int[] numberofsockets = new int[1];
-    File chatfile;
+    int[] numberofsockets ;
+    Decryptor dec = new Decryptor();
+    Encryptor en = new Encryptor();
     Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets){
         this.sc = sc;
         this.so = so;
@@ -212,17 +212,15 @@ class Manager extends Thread {
         try {
             int i;
             int count;
-            int chatid;
+            int chatid = 0;
             String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
             DataOutputStream[] RSdout = new DataOutputStream[10] ;
-            DataOutputStream curr_RSdout = null;
-            FileOutputStream fos;
+            DataOutputStream curr_RSdout = dout;
             String FileName;
-            Decryptor dec = new Decryptor();
-            Encryptor en = new Encryptor();
 
+            boolean p ;
             int FileSize;
             byte[] ReceivedData;
             for(i=0;i<10;i++)
@@ -232,17 +230,31 @@ class Manager extends Thread {
             String[] data;
             int encryptflag = 0;
             while (true) {
-                synchronized (din) {
                     str = din.readUTF();
+                    p = Pattern.matches("%[a-z]*%", str);
                     System.out.println("client " + sc.id + " says: " + str);
-                    if(str.equals("enableencryption"))
+                    if(p)
+                    {
+                    if(str.equals("%enableencryption%"))
                     {
                         encryptflag = 1;
                         continue;
                     }
-                    if (str.equals("exit")) {
+                    else if(str.equals("%disableencryption%"))
+                    {
+                        encryptflag = 0;
+                        continue;
+                    }
+                    if(str.equals("%decrypt%"))
+                    {
+                        str = din.readUTF();
+                        dout.writeUTF(chatid + " " +dec.decrypt(str));
+                        dout.flush();
+                        continue;
+                    }
+                    if (str.equals("%exit%")) {
                         dout.writeUTF("exit");
-                        synchronized (numberofsockets) {
+                        synchronized (MyServer.synchronizer) {
                             for (i = 0; i < numberofsockets[0]; i++) {
                                 if (so[i].id == sc.id) {
                                     so[i].id = -1;
@@ -255,7 +267,7 @@ class Manager extends Thread {
                             break;
                         }
                     }
-                    if(str.equals("file"))
+                    if(str.equals("%file%"))
                     {
                         FileName = din.readUTF();
                         FileSize = Integer.parseInt(din.readUTF());
@@ -263,14 +275,17 @@ class Manager extends Thread {
                         ReceivedData = new byte[FileSize];
                         System.out.println(ReceivedData.length);
                         din.readFully(ReceivedData);
-                        curr_RSdout.writeUTF("file");
-                        curr_RSdout.writeUTF(FileName);
-                        curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
-                        curr_RSdout.write(ReceivedData,0,ReceivedData.length);
-                        curr_RSdout.flush();
+                        synchronized (MyServer.synchronizer) {
+                            curr_RSdout.writeUTF("file");
+                            curr_RSdout.writeUTF(FileName);
+                            curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
+                            curr_RSdout.write(ReceivedData, 0, ReceivedData.length);
+                            curr_RSdout.flush();
+                        }
                     }
-                    else if (str.equals("list")) {
+                    else if (str.equals("%list%")) {
                         count  =0;
+
                         for (i = 0; count<numberofsockets[0]; i++) {
 
                             if ((so[i].id == sc.id)) {
@@ -282,46 +297,43 @@ class Manager extends Thread {
                                 continue;
                             }
                             if (RSdout[i] == null) {
-                                RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+                                synchronized (MyServer.synchronizer) {
+                                    RSdout[i] = new DataOutputStream(so[i].s.getOutputStream());
+                                }
 
                             }
-                            dout.writeUTF(so[i].username +" "+Integer.toString(so[i].id));
+                            dout.writeUTF(so[i].username +" "+so[i].id);
                             dout.flush();
                             count++;
                         }
                         System.out.println("end of list");
                         dout.writeUTF("end of list");
                         dout.flush();
-                        count = 0;
-                    } else {
-                        data = str.split(" ");
-
-                        if (data[0].equals("chat")) {
-                            chatid = Integer.parseInt(data[1]);
-                            curr_RSdout = RSdout[chatid];
-                        } else if (data[0].equals("others")) {
-                            data = str.split("others ");
-                            System.out.println(data[1]);
-                            dout.writeUTF(data[1]);
-                            dout.flush();
-                        } else {
-                            if(encryptflag == 1)
-                            curr_RSdout.writeUTF(sc.id + " " + en.encrypt(str));
-                            else
-                                curr_RSdout.writeUTF(sc.id + " " + str);
-                            curr_RSdout.flush();
+                    } }
+                    else {
+                        synchronized (MyServer.synchronizer) {
+                            data = str.split(" ");
+                            if (data[0].equals("%chat%")) {
+                                chatid = Integer.parseInt(data[1]);
+                                curr_RSdout = RSdout[chatid];
+                            } else if (data[0].equals("%others%")) {
+                                data = str.split("%others% ");
+                                dout.writeUTF(data[1]);
+                                dout.flush();
+                            } else {
+                                if (encryptflag == 1)
+                                    curr_RSdout.writeUTF(sc.id + " " + en.encrypt(str));
+                                else
+                                    curr_RSdout.writeUTF(sc.id + " " + str);
+                                curr_RSdout.flush();
+                            }
                         }
-
                     }
                 }
-            }
             din.close();
-        }
-        catch (SocketException e)
+            dout.close();
+        } catch (IOException e)
         {
-            System.out.println(e);
-        }
-        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -345,15 +357,16 @@ class Connector extends Thread{
     }
 
     public void run()
-    {   int i =0;
+    {   int i ;
         int j;
         numberofsockets[0] = 0;
         int n = so.length;
-        Decryptor dec = new Decryptor();
-        Encryptor enc = new Encryptor();
+
         int flag = 1;
         String str,newusername,newpassword;
         String[] onlineusers = new String[10];
+        Decryptor dec = new Decryptor();
+        Encryptor enc = new Encryptor();
         while(true) {
 
             try {
@@ -369,6 +382,10 @@ class Connector extends Thread{
                 dout = new DataOutputStream(so[i].s.getOutputStream());
                 din = new DataInputStream(so[i].s.getInputStream());
                 str = din.readUTF();
+                if(str.equals("%exit%"))
+                {
+                    continue;
+                }
                 if(str.equals("newaccount"))
                 {
                     newusername = din.readUTF();
@@ -403,7 +420,7 @@ class Connector extends Thread{
                         }
                     }
                     if (flag == 1) {
-                        synchronized (numberofsockets) {
+                        synchronized (MyServer.synchronizer) {
                             numberofsockets[0]++;
                             onlineusers[numberofsockets[0] - 1] = filedata[0];
                         }
@@ -413,7 +430,6 @@ class Connector extends Thread{
 
                         res.start();
                         System.out.println("Client connected");
-                        i++;
                     } else {
                         dout.writeUTF("wrong username or password");
                         dout.flush();
@@ -429,8 +445,10 @@ class Connector extends Thread{
 }
 
 class MyServer {
+    public final static Sync synchronizer = new Sync();
     public static void main(String[] args) throws Exception {
         CustomSocket[] so = new CustomSocket[10];
+
         int i;
         for(i=0;i<10;i++)
         {
