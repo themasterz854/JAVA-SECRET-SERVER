@@ -59,7 +59,7 @@ class MyClient {
     public static void main(String[] args) throws Exception {
         int ch;
         Scanner in = new Scanner(System.in);
-        Socket s = new Socket("localhost", 4545);
+        Socket s = new Socket("localhost", 4949);
         Sender1 sen = new Sender1(s);
         Receiver1 res = new Receiver1(s);
         System.out.println("1.Start chatting\nAny other key to exit");
