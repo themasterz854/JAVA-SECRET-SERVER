@@ -199,14 +199,15 @@ class Manager extends Thread {
     CustomSocket sc;
     CustomSocket[] so;
     int[] numberofsockets ;
+    String[] onlineusers ;
     Decryptor dec = new Decryptor();
     Encryptor en = new Encryptor();
-    Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets){
+    Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets,String[] onlineusers){
         this.sc = sc;
         this.so = so;
         this.sc.id = id;
         this.numberofsockets = numberofsockets;
-
+        this.onlineusers = onlineusers;
     }
     public void run() {
         try {
@@ -259,8 +260,10 @@ class Manager extends Thread {
                                 if (so[i].id == sc.id) {
                                     so[i].id = -1;
                                     so[i].s = null;
+                                    so[i].username = null;
                                     RSdout[i] = null;
                                     numberofsockets[0]--;
+                                    onlineusers[i] = null;
                                     break;
                                 }
                             }
@@ -276,7 +279,7 @@ class Manager extends Thread {
                         System.out.println(ReceivedData.length);
                         din.readFully(ReceivedData);
                         synchronized (MyServer.synchronizer) {
-                            curr_RSdout.writeUTF("file");
+                            curr_RSdout.writeUTF("%file%");
                             curr_RSdout.writeUTF(FileName);
                             curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
                             curr_RSdout.write(ReceivedData, 0, ReceivedData.length);
@@ -285,7 +288,6 @@ class Manager extends Thread {
                     }
                     else if (str.equals("%list%")) {
                         count  =0;
-
                         for (i = 0; count<numberofsockets[0]; i++) {
 
                             if ((so[i].id == sc.id)) {
@@ -384,6 +386,7 @@ class Connector extends Thread{
                 str = din.readUTF();
                 if(str.equals("%exit%"))
                 {
+                    System.out.println("Client exited");
                     continue;
                 }
                 if(str.equals("newaccount"))
@@ -425,7 +428,7 @@ class Connector extends Thread{
                             onlineusers[numberofsockets[0] - 1] = filedata[0];
                         }
                         so[i].username = filedata[0];
-                        Manager res = new Manager(so[i], i, so, numberofsockets);
+                        Manager res = new Manager(so[i], i, so, numberofsockets,onlineusers);
                         dout.writeUTF("ok");
 
                         res.start();
