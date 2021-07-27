@@ -249,21 +249,25 @@ class Manager extends Thread {
                     if(str.equals("%decrypt%"))
                     {
                         str = din.readUTF();
-                        dout.writeUTF(chatid + " " +dec.decrypt(str));
+                        System.out.println(dec.decrypt(str));
+                        dout.writeUTF(dec.decrypt(str));
                         dout.flush();
                         continue;
                     }
                     if (str.equals("%exit%")) {
                         dout.writeUTF("exit");
                         synchronized (MyServer.synchronizer) {
-                            for (i = 0; i < numberofsockets[0]; i++) {
+                            for (i = 0; i < 10; i++) {
                                 if (so[i].id == sc.id) {
+                                    System.out.println("exitting "+sc.id);
+                                    System.out.println("number of sockets is "+numberofsockets[0]);
+                                    RSdout[i] = null;
                                     so[i].id = -1;
                                     so[i].s = null;
                                     so[i].username = null;
-                                    RSdout[i] = null;
                                     numberofsockets[0]--;
                                     onlineusers[i] = null;
+                                    System.out.println("number of sockets is "+numberofsockets[0]);
                                     break;
                                 }
                             }
@@ -377,6 +381,7 @@ class Connector extends Thread{
                 {
                    if(so[i].id == -1) {
                        so[i].s = testsocket;
+                       System.out.println("id assigned "+ i);
                        break;
                    }
                 }
@@ -458,8 +463,10 @@ class MyServer {
             so[i] = new CustomSocket();
         }
         ServerSocket ss = new ServerSocket(4949);
+        System.out.println("Server has started");
         Connector con = new Connector(ss,so);
         con.start();
+
         con.join();
     }
 }
