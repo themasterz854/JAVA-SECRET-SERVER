@@ -466,7 +466,10 @@ class MyServer {
         System.out.println("Server has started");
         Connector con = new Connector(ss,so);
         con.start();
-
-        con.join();
+        Scanner in = new Scanner(System.in);
+        if(in.nextLine().equals("exit"))
+        {
+            System.exit(0);
+        }
     }
 }
