@@ -213,7 +213,7 @@ class Manager extends Thread {
         try {
             int i;
             int count;
-            int chatid = 0;
+            int chatid;
             String str ;
             DataInputStream din = new DataInputStream(sc.s.getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.s.getOutputStream());
@@ -456,7 +456,7 @@ class MyServer {
     public final static Sync synchronizer = new Sync();
     public static void main(String[] args) throws Exception {
         CustomSocket[] so = new CustomSocket[10];
-
+        String exitstr = "start";
         int i;
         for(i=0;i<10;i++)
         {
@@ -467,9 +467,11 @@ class MyServer {
         Connector con = new Connector(ss,so);
         con.start();
         Scanner in = new Scanner(System.in);
-        if(in.nextLine().equals("exit"))
+        while(!exitstr.equals("exit") )
         {
-            System.exit(0);
+           exitstr = in.nextLine();
         }
+        System.exit(0);
+
     }
 }
