@@ -35,28 +35,17 @@ class Encryptor{
           c = data.charAt(i);
           if (c >= '0' && c <= '9')
           {
-              switch (c)
-              {
-                  case '1': en = 'u';
-                      break;
-                  case '2': en = 'L';
-                      break;
-                  case '3': en = 'z';
-                      break;
-                  case '4': en = 'A';
-                      break;
-                  case '5': en = 'n';
-                      break;
-                  case '6': en = 'P';
-                      break;
-                  case '7': en = 's';
-                      break;
-                  case '8': en = 'G';
-                      break;
-                  case '9': en = 'w';
-                      break;
-                  case '0': en = 'I';
-                      break;
+              switch (c) {
+                  case '1' -> en = 'u';
+                  case '2' -> en = 'L';
+                  case '3' -> en = 'z';
+                  case '4' -> en = 'A';
+                  case '5' -> en = 'n';
+                  case '6' -> en = 'P';
+                  case '7' -> en = 's';
+                  case '8' -> en = 'G';
+                  case '9' -> en = 'w';
+                  case '0' -> en = 'I';
               }
           }
           else if (c == ' ')
