@@ -288,8 +288,11 @@ class Manager extends Thread {
                             break;
                         }
                     }
+                    String hash;
                     if(str.equals("%file%"))
                     {
+                        hash = din.readUTF();
+                        System.out.println("HASH " + hash);
                         FileName = din.readUTF();
                         FileSize = Integer.parseInt(din.readUTF());
                         System.out.println(FileSize);
@@ -298,6 +301,7 @@ class Manager extends Thread {
                         din.readFully(ReceivedData);
                         synchronized (MyServer.synchronizer) {
                             curr_RSdout.writeUTF("%file%");
+                            curr_RSdout.writeUTF(hash);
                             curr_RSdout.writeUTF(FileName);
                             curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
                             curr_RSdout.write(ReceivedData, 0, ReceivedData.length);
