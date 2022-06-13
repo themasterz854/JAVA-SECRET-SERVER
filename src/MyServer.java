@@ -1,6 +1,11 @@
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -8,115 +13,148 @@ import java.util.stream.IntStream;
 
 import static java.lang.Character.toLowerCase;
 
-class CustomSocket{
+class AES {
+
+    private static final String encryptionKey = "ABCDEFGHIJKLMNOP";
+    private static final String characterEncoding = "UTF-8";
+    private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
+    private static final String aesEncryptionAlgorithm = "AES";
+
+    public String encrypt(String plainText) {
+        String encryptedText = "";
+        try {
+            Cipher cipher = Cipher.getInstance(cipherTransformation);
+            byte[] key = encryptionKey.getBytes(characterEncoding);
+            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
+            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivparameterspec);
+            byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            Base64.Encoder encoder = Base64.getEncoder();
+            encryptedText = encoder.encodeToString(cipherText);
+
+        } catch (Exception E) {
+            System.err.println("Encrypt Exception : " + E.getMessage());
+        }
+        return encryptedText;
+    }
+
+
+    public String decrypt(String encryptedText) {
+        String decryptedText = "";
+        try {
+            Cipher cipher = Cipher.getInstance(cipherTransformation);
+            byte[] key = encryptionKey.getBytes(characterEncoding);
+            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
+            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivparameterspec);
+            Base64.Decoder decoder = Base64.getDecoder();
+            byte[] cipherText = decoder.decode(encryptedText.getBytes(StandardCharsets.UTF_8));
+            decryptedText = new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
+
+        } catch (Exception E) {
+            System.err.println("decrypt Exception : " + E.getMessage());
+        }
+        return decryptedText;
+    }
+
+
+}
+
+class CustomSocket {
     private Socket s;
     private int id;
-    CustomSocket(){
+
+    CustomSocket() {
         id = -1;
     }
+
     private String username;
-    public void setSocket(Socket s)
-    {
+
+    public void setSocket(Socket s) {
         this.s = s;
     }
-    public void setid(int id)
-    {
+
+    public void setid(int id) {
         this.id = id;
     }
-    public void setUsername(String username)
-    {
+
+    public void setUsername(String username) {
         this.username = username;
     }
-    public Socket getSocket()
-    {
+
+    public Socket getSocket() {
         return s;
     }
-    public int getid()
-    {
+
+    public int getid() {
         return id;
     }
-    public String getusername()
-    {
+
+    public String getusername() {
         return username;
     }
 }
 class Encryptor{
 
     public String encrypt(String data){
-    String random1 = "!%*#(}]";
-    String random2 = "@$^&)[\\";
-    String random3 = "<>?:;_{|`";
-    char[] encrypteddata;
-    Random random = new Random();
-    IntStream randomint = random.ints(10,0,9);
-    int[] randomarray = randomint.toArray();
-    int randomiterator = 0;
-    encrypteddata = new char[900];
-      int i,j=0,n,f;
-      char c,en = 'a';
-      n = data.length();
-      for(i =0;i<n;i++)
-      {
-          c = data.charAt(i);
-          if (c >= '0' && c <= '9')
-          {
-              switch (c) {
-                  case '1' -> en = 'u';
-                  case '2' -> en = 'L';
-                  case '3' -> en = 'z';
-                  case '4' -> en = 'A';
-                  case '5' -> en = 'n';
-                  case '6' -> en = 'P';
-                  case '7' -> en = 's';
-                  case '8' -> en = 'G';
-                  case '9' -> en = 'w';
-                  case '0' -> en = 'I';
-              }
-          }
-          else if (c == ' ')
-          {
-              en = '\"';
-          }
-          else if(c == '\n' )
-          {
-              en = c;
-          }
-          else
-          {
-              if(c >= 'a' && c <= 'z')
-              {
+        String random1 = "!%*#(}]";
+        String random2 = "@$^&)[\\";
+        String random3 = "<>?:;_{|`";
+        char[] encrypteddata;
+        Random random = new Random();
+        IntStream randomint = random.ints(10,0,9);
+        int[] randomarray = randomint.toArray();
+        int randomiterator = 0;
+        encrypteddata = new char[900];
+        int i,j=0,n,f;
+        char c,en = 'a';
+        n = data.length();
+        for(i =0; i<n; i++) {
+            c = data.charAt(i);
+            if (c >= '0' && c <= '9') {
+                switch (c) {
+                    case '1' -> en = 'u';
+                    case '2' -> en = 'L';
+                    case '3' -> en = 'z';
+                    case '4' -> en = 'A';
+                    case '5' -> en = 'n';
+                    case '6' -> en = 'P';
+                    case '7' -> en = 's';
+                    case '8' -> en = 'G';
+                    case '9' -> en = 'w';
+                    case '0' -> en = 'I';
+                }
+            } else if (c == ' ') {
+                en = '\"';
+            } else if(c == '\n' ) {
+                en = c;
+            } else {
+                if(c >= 'a' && c <= 'z') {
 
-                  encrypteddata[j++] = random3.charAt(randomarray[randomiterator++ % 10] % 8);
+                    encrypteddata[j++] = random3.charAt(randomarray[randomiterator++ % 10] % 8);
 
-              }
-              if(c >= 'a' && c <= 'z')
-              {
-                  f = Character.toUpperCase(c) - 16;
-              }
-              else
-              {
-                  f = c - 16;
-              }
-              if(f >= 58  && f <67)
-              {
+                }
+                if(c >= 'a' && c <= 'z') {
+                    f = Character.toUpperCase(c) - 16;
+                } else {
+                    f = c - 16;
+                }
+                if(f >= 58  && f <67) {
 
-                  encrypteddata[j++] = random1.charAt(randomarray[randomiterator++ % 10] % 7);
-                  en = (char)(f-9);
-              }
-              else if(f >= 67 && f <=74)
-              {
+                    encrypteddata[j++] = random1.charAt(randomarray[randomiterator++ % 10] % 7);
+                    en = (char)(f-9);
+                } else if(f >= 67 && f <=74) {
 
-                  encrypteddata[j++] = random2.charAt(randomarray[randomiterator++ % 10] % 7);
-                  en = (char)(f - 18);
-              }
-              else
-                  en = (char)f;
-          }
-          encrypteddata[j++] = en;
-      }
-      String encryptedstr = new String(encrypteddata);
-      encryptedstr = encryptedstr.trim();
-      return encryptedstr;
+                    encrypteddata[j++] = random2.charAt(randomarray[randomiterator++ % 10] % 7);
+                    en = (char)(f - 18);
+                } else
+                    en = (char)f;
+            }
+            encrypteddata[j++] = en;
+        }
+        String encryptedstr = new String(encrypteddata);
+        encryptedstr = encryptedstr.trim();
+        return encryptedstr;
     }
 }
 class Decryptor{
@@ -126,73 +164,50 @@ class Decryptor{
         char c;
         n = data.length();
         j =0;
-        for(i=0;i<n;i++)
-        {
+        for(i=0; i<n; i++) {
             flag = 0;
             c = data.charAt(i);
-            if (c == '\n')
-            {
+            if (c == '\n') {
                 decrypteddata[j++] = '\n';
                 continue;
             }
-            if(c == '\"')
-            {
+            if(c == '\"') {
                 decrypteddata[j++] = ' ';
                 continue;
             }
-            if(c == '<' || c == '>' || c == '?' || c == ':' || c == ';' || c == '_' || c == '{' || c == '|' || c == '`')
-            {
+            if(c == '<' || c == '>' || c == '?' || c == ':' || c == ';' || c == '_' || c == '{' || c == '|' || c == '`') {
                 flag = 1;
                 c = data.charAt(++i);
             }
-            if(c == '@' || c == '$' || c == '^' || c == '&' || c == ')' || c == '[' || c == '\\')
-            {
+            if(c == '@' || c == '$' || c == '^' || c == '&' || c == ')' || c == '[' || c == '\\') {
                 c = data.charAt(++i);
                 f = c + 16;
                 c = (char)(f + 18);
 
-            }
-            else if(c == '!' || c == '#' || c == '%' || c == '*' || c == '(' || c == '}' || c == ']')
-            {
+            } else if(c == '!' || c == '#' || c == '%' || c == '*' || c == '(' || c == '}' || c == ']') {
                 c = data.charAt(++i);
                 f = c + 16;
                 c = (char)(f+9);
-            }
-            else if(c >= '0' && c <= '9')
-            {
+            } else if(c >= '0' && c <= '9') {
                 f = c +16;
                 c = (char)f;
-            }
-            else
-            {
-                switch (c)
-                {
-                    case 'u': c = '1';
-                        break;
-                    case 'L': c = '2';
-                        break;
-                    case 'z': c = '3';
-                        break;
-                    case 'A': c = '4';
-                        break;
-                    case 'n': c = '5';
-                        break;
-                    case 'P': c = '6';
-                        break;
-                    case 's': c = '7';
-                        break;
-                    case 'G': c = '8';
-                        break;
-                    case 'w': c = '9';
-                        break;
-                    case 'I': c = '0';
-                        break;
-                    default:
-                        break;
+            } else {
+                switch (c) {
+                    case 'u' -> c = '1';
+                    case 'L' -> c = '2';
+                    case 'z' -> c = '3';
+                    case 'A' -> c = '4';
+                    case 'n' -> c = '5';
+                    case 'P' -> c = '6';
+                    case 's' -> c = '7';
+                    case 'G' -> c = '8';
+                    case 'w' -> c = '9';
+                    case 'I' -> c = '0';
+                    default -> {
+                    }
                 }
             }
-            if (flag == 1 && (c >= 'A' && c <= 'Z'))
-            {
+            if (flag == 1 && (c >= 'A' && c <= 'Z')) {
                 c  = toLowerCase(c);
             }
             decrypteddata[j++] = c;
@@ -216,6 +231,7 @@ class Manager extends Thread {
     private final String[] onlineusers ;
     private final Decryptor dec = new Decryptor();
     private final Encryptor en = new Encryptor();
+
     Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets,String[] onlineusers){
         this.sc = sc;
         this.so = so;
@@ -223,6 +239,7 @@ class Manager extends Thread {
         this.numberofsockets = numberofsockets;
         this.onlineusers = onlineusers;
     }
+
     public void run() {
         try {
             int i;
@@ -238,30 +255,24 @@ class Manager extends Thread {
             boolean p ;
             int FileSize;
             byte[] ReceivedData;
-            for(i=0;i<10;i++)
-            {
+            for(i=0; i<10; i++) {
                 RSdout[i] = null;
             }
             String[] data;
             int encryptflag = 0;
             while (true) {
-                    str = din.readUTF();
-                    p = Pattern.matches("%[a-z]*%", str);
-                    System.out.println("client " + sc.getid() + " says: " + str);
-                    if(p)
-                    {
-                    if(str.equals("%enableencryption%"))
-                    {
+                str = din.readUTF();
+                p = Pattern.matches("%[a-z]*%", str);
+                System.out.println("client " + sc.getid() + " says: " + str);
+                if(p) {
+                    if(str.equals("%enableencryption%")) {
                         encryptflag = 1;
                         continue;
-                    }
-                    else if(str.equals("%disableencryption%"))
-                    {
+                    } else if(str.equals("%disableencryption%")) {
                         encryptflag = 0;
                         continue;
                     }
-                    if(str.equals("%decrypt%"))
-                    {
+                    if(str.equals("%decrypt%")) {
                         str = din.readUTF();
                         System.out.println(dec.decrypt(str));
                         dout.writeUTF(dec.decrypt(str));
@@ -289,8 +300,7 @@ class Manager extends Thread {
                         }
                     }
                     String hash;
-                    if(str.equals("%file%"))
-                    {
+                    if(str.equals("%file%")) {
                         hash = din.readUTF();
                         System.out.println("HASH " + hash);
                         FileName = din.readUTF();
@@ -301,14 +311,13 @@ class Manager extends Thread {
                         din.readFully(ReceivedData);
                         synchronized (MyServer.synchronizer) {
                             curr_RSdout.writeUTF("%file%");
-                            curr_RSdout.writeUTF(hash);
-                            curr_RSdout.writeUTF(FileName);
+                            curr_RSdout.writeUTF(MyServer.aes.encrypt(hash));
+                            curr_RSdout.writeUTF(MyServer.aes.encrypt(FileName));
                             curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
                             curr_RSdout.write(ReceivedData, 0, ReceivedData.length);
                             curr_RSdout.flush();
                         }
-                    }
-                    else if (str.equals("%list%")) {
+                    } else if (str.equals("%list%")) {
                         count  =0;
                         for (i = 0; count<numberofsockets[0]; i++) {
 
@@ -316,8 +325,7 @@ class Manager extends Thread {
                                 count++;
                                 continue;
                             }
-                            if(so[i].getid() == -1)
-                            {
+                            if(so[i].getid() == -1) {
                                 continue;
                             }
                             if (RSdout[i] == null) {
@@ -333,31 +341,29 @@ class Manager extends Thread {
                         System.out.println("end of list");
                         dout.writeUTF("end of list");
                         dout.flush();
-                    } }
-                    else {
-                        synchronized (MyServer.synchronizer) {
-                            data = str.split(" ");
-                            if (data[0].equals("%chat%")) {
-                                chatid = Integer.parseInt(data[1]);
-                                curr_RSdout = RSdout[chatid];
-                            } else if (data[0].equals("%others%")) {
-                                data = str.split("%others% ");
-                                dout.writeUTF(data[1]);
-                                dout.flush();
-                            } else {
-                                if (encryptflag == 1)
-                                    curr_RSdout.writeUTF(sc.getid() + " " + en.encrypt(str));
-                                else
-                                    curr_RSdout.writeUTF(sc.getid() + " " + str);
-                                curr_RSdout.flush();
-                            }
+                    } } else {
+                    synchronized (MyServer.synchronizer) {
+                        data = str.split(" ");
+                        if (data[0].equals("%chat%")) {
+                            chatid = Integer.parseInt(data[1]);
+                            curr_RSdout = RSdout[chatid];
+                        } else if (data[0].equals("%others%")) {
+                            data = str.split("%others% ");
+                            dout.writeUTF(data[1]);
+                            dout.flush();
+                        } else {
+                            if (encryptflag == 1)
+                                curr_RSdout.writeUTF(MyServer.aes.encrypt(sc.getid() + " " + en.encrypt(str)));
+                            else
+                                curr_RSdout.writeUTF(MyServer.aes.encrypt(sc.getid() + " " + str));
+                            curr_RSdout.flush();
                         }
                     }
                 }
+            }
             din.close();
             dout.close();
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -369,13 +375,13 @@ class Connector extends Thread{
     private final FileWriter filewriter = new FileWriter(passfile,true);
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
+
     Connector(ServerSocket ss,CustomSocket[] so) throws IOException {
         this.ss = ss;
         this.so = so;
     }
 
-    public void run()
-    {
+    public void run() {
         Socket testsocket;
         String data;
         String[] userdata;
@@ -396,33 +402,30 @@ class Connector extends Thread{
 
             try {
                 testsocket = ss.accept();
-                for(i=0;i<n;i++)
-                {
-                   if(so[i].getid() == -1) {
-                       so[i].setSocket(testsocket);
-                       System.out.println("id assigned "+ i);
-                       break;
-                   }
+                for(i=0; i<n; i++) {
+                    if(so[i].getid() == -1) {
+                        so[i].setSocket(testsocket);
+                        System.out.println("id assigned "+ i);
+                        break;
+                    }
                 }
 
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
                 str = din.readUTF();
-                if(str.equals("%exit%"))
-                {
+                if(str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
                 }
-                if(str.equals("newaccount"))
-                {
-                    newusername = din.readUTF();
-                    newpassword = din.readUTF();
+                if(str.equals("newaccount")) {
+                    newusername = MyServer.aes.decrypt(din.readUTF());
+                    newpassword = MyServer.aes.decrypt(din.readUTF());
 
-                    filewriter.write(enc.encrypt(newusername+" "+newpassword)+"\n");
+                    filewriter.write(enc.encrypt(newusername + " " + newpassword) + "\n");
                     filewriter.flush();
                     filewriter.close();
-                }
-                else {
+                } else {
+                    str = MyServer.aes.decrypt(str);
                     userdata = str.split(" ");
                     filereader = new Scanner(passfile);
                     while (filereader.hasNextLine()) {
@@ -431,7 +434,7 @@ class Connector extends Thread{
                         filedata = data.split(" ");
                         if (filedata[0].equals(userdata[0]) && filedata[1].equals(userdata[1]) ) {
                             flag = 1;
-                            for(j=0;j<numberofsockets[0] ;j++) {
+                            for(j=0; j<numberofsockets[0] ; j++) {
                                 if (filedata[0].equals(onlineusers[j])) {
                                     dout.writeUTF("User already logged in");
                                     dout.flush();
@@ -440,12 +443,11 @@ class Connector extends Thread{
                                 }
                             }
                             break;
-                        }
-                        else
-                        {
+                        } else {
                             flag =0;
                         }
                     }
+                    filereader.close();
                     if (flag == 1) {
                         synchronized (MyServer.synchronizer) {
                             numberofsockets[0]++;
@@ -473,12 +475,13 @@ class Connector extends Thread{
 
 class MyServer {
     public final static Sync synchronizer = new Sync();
+    public final static AES aes = new AES();
+
     public static void main(String[] args) throws Exception {
         CustomSocket[] so = new CustomSocket[10];
         String exitstr = "start";
         int i;
-        for(i=0;i<10;i++)
-        {
+        for(i=0; i<10; i++) {
             so[i] = new CustomSocket();
         }
         ServerSocket ss = new ServerSocket(4949);
@@ -486,10 +489,10 @@ class MyServer {
         Connector con = new Connector(ss,so);
         con.start();
         Scanner in = new Scanner(System.in);
-        while(!exitstr.equals("exit") )
-        {
-           exitstr = in.nextLine();
+        while(!exitstr.equals("exit") ) {
+            exitstr = in.nextLine();
         }
+        in.close();
         System.exit(0);
 
     }
