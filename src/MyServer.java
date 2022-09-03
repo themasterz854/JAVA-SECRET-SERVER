@@ -386,6 +386,7 @@ class Connector extends Thread{
     private final CustomSocket[] so ;
     private final File passfile = new File("C:\\Users\\Zaid\\Desktop\\uspass.txt");
     private FileWriter filewriter;
+    private FileReader filereader;
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
 
@@ -431,13 +432,34 @@ class Connector extends Thread{
                     continue;
                 }
                 if (str.equals("%newaccount%")) {
+                    int existflag = 0;
+                    System.out.println("new account");
                     filewriter = new FileWriter(passfile, true);
                     newusername = MyServer.aes.decrypt(din.readUTF());
                     newpassword = MyServer.aes.decrypt(din.readUTF());
-
+                    filereader = new Scanner(passfile);
+                    while (filereader.hasNextLine()) {
+                        data = filereader.nextLine();
+                        data = dec.decrypt(data);
+                        filedata = data.split(" ");
+                        if (filedata[0].equals(newusername)) {
+                            System.out.println("EXISTS");
+                            dout.writeUTF("exists");
+                            dout.flush();
+                            existflag = 1;
+                            break;
+                        }
+                    }
+                    filereader.close();
+                    if (existflag == 1) {
+                        filewriter.close();
+                        continue;
+                    }
                     filewriter.write(enc.encrypt(newusername + " " + newpassword) + "\n");
                     filewriter.flush();
                     filewriter.close();
+                    dout.writeUTF("account created");
+                    dout.flush();
                 } else {
                     str = MyServer.aes.decrypt(str);
                     userdata = str.split(" ");
