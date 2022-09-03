@@ -274,26 +274,26 @@ class Manager extends Thread {
             String[] data;
             int encryptflag = 0;
             while (true) {
-                str = din.readUTF();
+                str = MyServer.aes.decrypt(din.readUTF());
+                System.out.println("HERE5");
                 p = Pattern.matches("%[a-z]*%", str);
                 System.out.println("client " + sc.getid() + " says: " + str);
-                if(p) {
-                    if(str.equals("%enableencryption%")) {
+                if (p) {
+                    if (str.equals("%enableencryption%")) {
                         encryptflag = 1;
                         continue;
-                    } else if(str.equals("%disableencryption%")) {
+                    } else if (str.equals("%disableencryption%")) {
                         encryptflag = 0;
                         continue;
                     }
                     if(str.equals("%decrypt%")) {
-                        str = din.readUTF();
-                        System.out.println(dec.decrypt(str));
-                        dout.writeUTF(dec.decrypt(str));
+                        str = MyServer.aes.decrypt(din.readUTF());
+                        dout.writeUTF(MyServer.aes.encrypt(dec.decrypt(str)));
                         dout.flush();
                         continue;
                     }
                     if (str.equals("%exit%")) {
-                        dout.writeUTF("exit");
+                        dout.writeUTF(MyServer.aes.encrypt("exit"));
                         synchronized (MyServer.synchronizer) {
                             for (i = 0; i < 10; i++) {
                                 if (so[i].getid() == sc.getid()) {
@@ -314,19 +314,19 @@ class Manager extends Thread {
                     }
                     String hash;
                     if(str.equals("%file%")) {
-                        hash = din.readUTF();
+                        hash = MyServer.aes.decrypt(din.readUTF());
                         System.out.println("HASH " + hash);
-                        FileName = din.readUTF();
-                        FileSize = Integer.parseInt(din.readUTF());
+                        FileName = MyServer.aes.decrypt(din.readUTF());
+                        FileSize = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
                         System.out.println(FileSize);
                         ReceivedData = new byte[FileSize];
                         System.out.println(ReceivedData.length);
                         din.readFully(ReceivedData);
                         synchronized (MyServer.synchronizer) {
-                            curr_RSdout.writeUTF("%file%");
+                            curr_RSdout.writeUTF(MyServer.aes.encrypt("%file%"));
                             curr_RSdout.writeUTF(MyServer.aes.encrypt(hash));
                             curr_RSdout.writeUTF(MyServer.aes.encrypt(FileName));
-                            curr_RSdout.writeUTF(Integer.toString(ReceivedData.length));
+                            curr_RSdout.writeUTF(MyServer.aes.encrypt(Integer.toString(ReceivedData.length)));
                             curr_RSdout.write(ReceivedData, 0, ReceivedData.length);
                             curr_RSdout.flush();
                         }
@@ -347,12 +347,12 @@ class Manager extends Thread {
                                 }
 
                             }
-                            dout.writeUTF(so[i].getusername() +" "+so[i].getid());
+                            dout.writeUTF(MyServer.aes.encrypt(so[i].getusername() + " " + so[i].getid()));
                             dout.flush();
                             count++;
                         }
                         System.out.println("end of list");
-                        dout.writeUTF("end of list");
+                        dout.writeUTF(MyServer.aes.encrypt("end of list"));
                         dout.flush();
                     } } else {
                     synchronized (MyServer.synchronizer) {
@@ -362,7 +362,7 @@ class Manager extends Thread {
                             curr_RSdout = RSdout[chatid];
                         } else if (data[0].equals("%others%")) {
                             data = str.split("%others% ");
-                            dout.writeUTF(data[1]);
+                            dout.writeUTF(MyServer.aes.encrypt(data[1]));
                             dout.flush();
                         } else {
                             if (encryptflag == 1)
@@ -416,17 +416,19 @@ class Connector extends Thread{
 
             try {
                 testsocket = ss.accept();
-                for(i=0; i<n; i++) {
-                    if(so[i].getid() == -1) {
+                for (i = 0; i < n; i++) {
+                    if (so[i].getid() == -1) {
                         so[i].setSocket(testsocket);
-                        System.out.println("id assigned "+ i);
+                        System.out.println("id assigned " + i);
                         break;
                     }
                 }
 
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
-                str = din.readUTF();
+                System.out.println("HERE");
+                str = MyServer.aes.decrypt(din.readUTF());
+                System.out.println("HERe2");
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
@@ -444,7 +446,7 @@ class Connector extends Thread{
                         filedata = data.split(" ");
                         if (filedata[0].equals(newusername)) {
                             System.out.println("EXISTS");
-                            dout.writeUTF("exists");
+                            dout.writeUTF(MyServer.aes.encrypt("exists"));
                             dout.flush();
                             existflag = 1;
                             break;
@@ -458,10 +460,9 @@ class Connector extends Thread{
                     filewriter.write(enc.encrypt(newusername + " " + newpassword) + "\n");
                     filewriter.flush();
                     filewriter.close();
-                    dout.writeUTF("account created");
+                    dout.writeUTF(MyServer.aes.encrypt("account created"));
                     dout.flush();
                 } else {
-                    str = MyServer.aes.decrypt(str);
                     userdata = str.split(" ");
                     filereader = new Scanner(passfile);
                     while (filereader.hasNextLine()) {
@@ -472,7 +473,7 @@ class Connector extends Thread{
                             flag = 1;
                             for(j=0; j<numberofsockets[0] ; j++) {
                                 if (filedata[0].equals(onlineusers[j])) {
-                                    dout.writeUTF("User already logged in");
+                                    dout.writeUTF(MyServer.aes.encrypt("User already logged in"));
                                     dout.flush();
                                     flag = 0;
                                     break;
@@ -491,12 +492,12 @@ class Connector extends Thread{
                         }
                         so[i].setUsername(filedata[0]);
                         Manager res = new Manager(so[i], i, so, numberofsockets,onlineusers);
-                        dout.writeUTF("ok");
+                        dout.writeUTF(MyServer.aes.encrypt("ok"));
 
                         res.start();
                         System.out.println("Client connected");
                     } else {
-                        dout.writeUTF("wrong username or password");
+                        dout.writeUTF(MyServer.aes.encrypt("wrong username or password"));
                         dout.flush();
                     }
                     flag = 1;
