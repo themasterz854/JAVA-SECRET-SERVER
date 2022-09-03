@@ -126,15 +126,19 @@ class Encryptor{
                 }
             } else if (c == ' ') {
                 en = '\"';
-            } else if(c == '\n' ) {
-                en = c;
+            } else if (c == '\n') {
+                en = '~';
+            } else if (c == '.') {
+                en = '/';
+            } else if (c == ',') {
+                en = '=';
             } else {
-                if(c >= 'a' && c <= 'z') {
+                if (c >= 'a' && c <= 'z') {
 
                     encrypteddata[j++] = random3.charAt(randomarray[randomiterator++ % 10] % 8);
 
                 }
-                if(c >= 'a' && c <= 'z') {
+                if (c >= 'a' && c <= 'z') {
                     f = Character.toUpperCase(c) - 16;
                 } else {
                     f = c - 16;
@@ -167,22 +171,31 @@ class Decryptor{
         for(i=0; i<n; i++) {
             flag = 0;
             c = data.charAt(i);
-            if (c == '\n') {
+            if (c == '~') {
                 decrypteddata[j++] = '\n';
                 continue;
             }
-            if(c == '\"') {
+            if (c == '\"') {
                 decrypteddata[j++] = ' ';
                 continue;
             }
-            if(c == '<' || c == '>' || c == '?' || c == ':' || c == ';' || c == '_' || c == '{' || c == '|' || c == '`') {
+            if (c == '/') {
+                decrypteddata[j++] = '.';
+                continue;
+            }
+            if (c == '=') {
+                decrypteddata[j++] = ',';
+                continue;
+            }
+
+            if (c == '<' || c == '>' || c == '?' || c == ':' || c == ';' || c == '_' || c == '{' || c == '|' || c == '`') {
                 flag = 1;
                 c = data.charAt(++i);
             }
-            if(c == '@' || c == '$' || c == '^' || c == '&' || c == ')' || c == '[' || c == '\\') {
+            if (c == '@' || c == '$' || c == '^' || c == '&' || c == ')' || c == '[' || c == '\\') {
                 c = data.charAt(++i);
                 f = c + 16;
-                c = (char)(f + 18);
+                c = (char) (f + 18);
 
             } else if(c == '!' || c == '#' || c == '%' || c == '*' || c == '(' || c == '}' || c == ']') {
                 c = data.charAt(++i);
@@ -372,7 +385,7 @@ class Connector extends Thread{
     private final ServerSocket ss;
     private final CustomSocket[] so ;
     private final File passfile = new File("C:\\Users\\Zaid\\Desktop\\uspass.txt");
-    private final FileWriter filewriter = new FileWriter(passfile,true);
+    private FileWriter filewriter;
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
 
@@ -413,11 +426,12 @@ class Connector extends Thread{
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
                 str = din.readUTF();
-                if(str.equals("%exit%")) {
+                if (str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
                 }
-                if(str.equals("newaccount")) {
+                if (str.equals("%newaccount%")) {
+                    filewriter = new FileWriter(passfile, true);
                     newusername = MyServer.aes.decrypt(din.readUTF());
                     newpassword = MyServer.aes.decrypt(din.readUTF());
 
