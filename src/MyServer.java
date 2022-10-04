@@ -1,10 +1,19 @@
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.security.*;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
@@ -12,6 +21,107 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static java.lang.Character.toLowerCase;
+
+class rsa {
+    KeyPairGenerator generator;
+    KeyPair pair;
+    PrivateKey privateKey;
+    PublicKey publicKey;
+    KeyFactory keyFactory;
+
+
+    rsa() {
+        try {
+            generator = KeyPairGenerator.getInstance("RSA");
+            keyFactory = KeyFactory.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        generator.initialize(2048);
+        pair = generator.generateKeyPair();
+        privateKey = pair.getPrivate();
+        publicKey = pair.getPublic();
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream("public.key");
+            fos.write(publicKey.getEncoded());
+            fos.close();
+            fos = new FileOutputStream("private.key");
+            fos.write(privateKey.getEncoded());
+            fos.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        privateKey = null;
+        publicKey = null;
+        System.out.println("Keys generated");
+    }
+
+    public void getPublickey() {
+        File publicKeyFile = new File("public.key");
+        byte[] publicKeyBytes;
+        try {
+            publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+            EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+            this.publicKey = keyFactory.generatePublic(publicKeySpec);
+        } catch (IOException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    public void getPrivatekey() {
+        File privateKeyFile = new File("private.key");
+        byte[] privateKeyBytes;
+        try {
+            privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+
+            EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+            this.privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+        } catch (IOException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String encrypt(String message) {
+        Cipher encryptCipher;
+        try {
+            encryptCipher = Cipher.getInstance("RSA");
+            encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] secretMessageBytes = message.getBytes(StandardCharsets.UTF_8);
+            byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
+            String encodedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
+            System.out.println(encodedMessage);
+            return encodedMessage;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public String decrypt(String encryptedmessage) {
+        Cipher decryptCipher;
+        String decryptedMessage;
+        byte[] encryptedMessageBytes = Base64.getDecoder().decode(encryptedmessage);
+
+        try {
+            decryptCipher = Cipher.getInstance("RSA");
+            decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] decryptedMessageBytes = decryptCipher.doFinal(encryptedMessageBytes);
+            decryptedMessage = new String(decryptedMessageBytes, StandardCharsets.UTF_8);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+
+        return decryptedMessage;
+    }
+
+}
 
 class AES {
 
@@ -275,7 +385,6 @@ class Manager extends Thread {
             int encryptflag = 0;
             while (true) {
                 str = MyServer.aes.decrypt(din.readUTF());
-                System.out.println("HERE5");
                 p = Pattern.matches("%[a-z]*%", str);
                 System.out.println("client " + sc.getid() + " says: " + str);
                 if (p) {
@@ -386,11 +495,10 @@ class Connector extends Thread{
     private final CustomSocket[] so ;
     private final File passfile = new File("C:\\Users\\Zaid\\Desktop\\uspass.txt");
     private FileWriter filewriter;
-    private FileReader filereader;
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
 
-    Connector(ServerSocket ss,CustomSocket[] so) throws IOException {
+    Connector(ServerSocket ss, CustomSocket[] so) {
         this.ss = ss;
         this.so = so;
     }
@@ -426,9 +534,17 @@ class Connector extends Thread{
 
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
-                System.out.println("HERE");
+                File publicKeyFile = new File("public.key");
+                byte[] publicKeyBytes;
+                publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+                dout.writeInt(publicKeyBytes.length);
+                dout.flush();
+                dout.write(publicKeyBytes);
+                System.out.println("sent public key");
+                dout.flush();
+                String testdata = din.readUTF();
+                System.out.println(MyServer.rsaobj.decrypt(testdata));
                 str = MyServer.aes.decrypt(din.readUTF());
-                System.out.println("HERe2");
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
@@ -513,20 +629,24 @@ class Connector extends Thread{
 class MyServer {
     public final static Sync synchronizer = new Sync();
     public final static AES aes = new AES();
+    public final static rsa rsaobj = new rsa();
 
     public static void main(String[] args) throws Exception {
         CustomSocket[] so = new CustomSocket[10];
         String exitstr = "start";
+        rsaobj.getPublickey();
+        rsaobj.getPrivatekey();
+        System.out.println(rsaobj.decrypt(rsaobj.encrypt("ABCDEFGHIJKLMNOP")));
         int i;
-        for(i=0; i<10; i++) {
+        for (i = 0; i < 10; i++) {
             so[i] = new CustomSocket();
         }
         ServerSocket ss = new ServerSocket(4949);
         System.out.println("Server has started");
-        Connector con = new Connector(ss,so);
+        Connector con = new Connector(ss, so);
         con.start();
         Scanner in = new Scanner(System.in);
-        while(!exitstr.equals("exit") ) {
+        while (!exitstr.equals("exit")) {
             exitstr = in.nextLine();
         }
         in.close();
