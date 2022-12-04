@@ -86,7 +86,7 @@ class rsa {
         }
     }
 
-    public String encrypt(String message) {
+    public String encrypt(String message, PublicKey publicKey) {
         Cipher encryptCipher;
         try {
             encryptCipher = Cipher.getInstance("RSA");
@@ -103,7 +103,7 @@ class rsa {
 
     }
 
-    public String decrypt(String encryptedmessage) {
+    public String decrypt(String encryptedmessage, PrivateKey privateKey) {
         Cipher decryptCipher;
         String decryptedMessage;
         byte[] encryptedMessageBytes = Base64.getDecoder().decode(encryptedmessage);
@@ -125,7 +125,7 @@ class rsa {
 
 class AES {
 
-    private static final String encryptionKey = "ABCDEFGHIJKLMNOP";
+    protected String encryptionKey = "ABCDEFGHIJKLMNOZ";
     private static final String characterEncoding = "UTF-8";
     private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
     private static final String aesEncryptionAlgorithm = "AES";
@@ -572,16 +572,37 @@ class Connector extends Thread{
 
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
+
+
                 File publicKeyFile = new File("public.key");
                 byte[] publicKeyBytes;
                 publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
                 dout.writeInt(publicKeyBytes.length);
                 dout.flush();
                 dout.write(publicKeyBytes);
-                System.out.println("sent public key");
+                System.out.println("sent public key\n");
                 dout.flush();
-                String testdata = din.readUTF();
-                System.out.println(MyServer.rsaobj.decrypt(testdata));
+
+                int keylength;
+                keylength = din.readInt();
+                byte[] publickeyBytes = new byte[keylength];
+                din.read(publickeyBytes, 0, keylength);
+                EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
+                System.out.println("receive public key\n");
+                try {
+                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    PublicKey publickey = keyFactory.generatePublic(publicKeySpec);
+                    dout.writeUTF(MyServer.rsaobj.encrypt(MyServer.aes.encryptionKey, publickey));
+                    dout.flush();
+                    System.out.println("sent aes key\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    throw new RuntimeException(e);
+                }
+                // String testdata = din.readUTF();
+                //System.out.println(MyServer.rsaobj.decrypt(testdata, MyServer.rsaobj.privateKey));
                 str = MyServer.aes.decrypt(din.readUTF());
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
@@ -674,7 +695,7 @@ class MyServer {
         String exitstr = "start";
         rsaobj.getPublickey();
         rsaobj.getPrivatekey();
-        System.out.println(rsaobj.decrypt(rsaobj.encrypt("ABCDEFGHIJKLMNOP")));
+        System.out.println(rsaobj.decrypt(rsaobj.encrypt("ABCDEFGHIJKLMNOP", rsaobj.publicKey), rsaobj.privateKey));
         int i;
         for (i = 0; i < 10; i++) {
             so[i] = new CustomSocket();
