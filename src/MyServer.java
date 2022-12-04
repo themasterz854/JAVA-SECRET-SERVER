@@ -681,6 +681,9 @@ class MyServer {
         }
         ServerSocket ss = new ServerSocket(4949);
         System.out.println("Server has started");
+        System.out.println(
+                String.format("The current shell is: %s/Downloads.", System.getProperty("user.home").replace('\\', '/'))
+        );
         Connector con = new Connector(ss, so);
         con.start();
         Scanner in = new Scanner(System.in);
