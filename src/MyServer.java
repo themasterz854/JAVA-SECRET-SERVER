@@ -130,10 +130,22 @@ class AES {
     private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
     private static final String aesEncryptionAlgorithm = "AES";
 
+    public AES() throws NoSuchAlgorithmException {
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[12];
+        random.nextBytes(bytes);
+        Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
+        encryptionKey = encoder.encodeToString(bytes);
+
+        System.out.println(encryptionKey.length() + "\n" + encryptionKey);
+    }
+
     public String encrypt(String plainText) {
+
         String encryptedText = "";
         try {
             Cipher cipher = Cipher.getInstance(cipherTransformation);
+
             byte[] key = encryptionKey.getBytes(characterEncoding);
             SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
             IvParameterSpec ivparameterspec = new IvParameterSpec(key);
@@ -152,7 +164,7 @@ class AES {
         byte[] encryptedBytes = new byte[0];
         try {
             Cipher cipher = Cipher.getInstance(cipherTransformation);
-            byte[] key = encryptionKey.getBytes(characterEncoding);
+            byte[] key = encryptionKey.getBytes();
             SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
             IvParameterSpec ivparameterspec = new IvParameterSpec(key);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivparameterspec);
@@ -179,7 +191,7 @@ class AES {
             decryptedText = new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
 
         } catch (Exception E) {
-            System.err.println("decrypt Exception : " + E.getMessage());
+            System.err.println("Decrypt Exception : " + E.getMessage());
         }
         return decryptedText;
     }
@@ -188,7 +200,7 @@ class AES {
         byte[] decryptedText = new byte[0];
         try {
             Cipher cipher = Cipher.getInstance(cipherTransformation);
-            byte[] key = encryptionKey.getBytes(characterEncoding);
+            byte[] key = encryptionKey.getBytes();
             SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
             IvParameterSpec ivparameterspec = new IvParameterSpec(key);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivparameterspec);
@@ -197,7 +209,7 @@ class AES {
             decryptedText = cipher.doFinal(cipherText);
 
         } catch (Exception E) {
-            System.err.println("decrypt Exception : " + E.getMessage());
+            System.err.println("Decrypt Exception : " + E.getMessage());
         }
         return decryptedText;
     }
@@ -687,7 +699,16 @@ class Connector extends Thread{
 
 class MyServer {
     public final static Sync synchronizer = new Sync();
-    public final static AES aes = new AES();
+    public final static AES aes;
+
+    static {
+        try {
+            aes = new AES();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public final static rsa rsaobj = new rsa();
 
     public static void main(String[] args) throws Exception {
