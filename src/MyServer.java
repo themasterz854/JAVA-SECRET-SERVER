@@ -125,14 +125,14 @@ class rsa {
 
 class AES {
 
-    protected String encryptionKey = "ABCDEFGHIJKLMNOZ";
+    protected String encryptionKey;
     private static final String characterEncoding = "UTF-8";
     private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
     private static final String aesEncryptionAlgorithm = "AES";
 
     public AES() throws NoSuchAlgorithmException {
         SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[12];
+        byte[] bytes = new byte[12];
         random.nextBytes(bytes);
         Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
         encryptionKey = encoder.encodeToString(bytes);
@@ -542,8 +542,8 @@ class Manager extends Thread {
 }
 class Connector extends Thread{
     private final ServerSocket ss;
-    private final CustomSocket[] so ;
-    private final File passfile = new File("C:\\Users\\Zaid\\Desktop\\uspass.txt");
+    private final CustomSocket[] so;
+    private final File passfile = new File(System.getProperty("user.home").replace('\\', '/') + "/Desktop/uspass.txt");
     private FileWriter filewriter;
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
@@ -613,8 +613,6 @@ class Connector extends Thread{
                 } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
                     throw new RuntimeException(e);
                 }
-                // String testdata = din.readUTF();
-                //System.out.println(MyServer.rsaobj.decrypt(testdata, MyServer.rsaobj.privateKey));
                 str = MyServer.aes.decrypt(din.readUTF());
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
@@ -723,9 +721,7 @@ class MyServer {
         }
         ServerSocket ss = new ServerSocket(4949);
         System.out.println("Server has started");
-        System.out.println(
-                String.format("The current shell is: %s/Downloads.", System.getProperty("user.home").replace('\\', '/'))
-        );
+        System.out.printf("The current shell is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
         Connector con = new Connector(ss, so);
         con.start();
         Scanner in = new Scanner(System.in);
