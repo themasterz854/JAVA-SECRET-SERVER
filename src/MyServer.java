@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static java.lang.Character.toLowerCase;
-
 class rsa {
     KeyPairGenerator generator;
     KeyPair pair;
@@ -422,8 +421,8 @@ class Manager extends Thread {
             DataOutputStream[] RSdout = new DataOutputStream[10] ;
             DataOutputStream curr_RSdout = dout;
             String FileName;
-
-            boolean p ;
+            String NASfilelist;
+            boolean p;
             int FileSize;
             byte[] ReceivedData;
             for(i=0; i<10; i++) {
@@ -431,19 +430,21 @@ class Manager extends Thread {
             }
             String[] data;
             int encryptflag = 0;
+            String hash;
             while (true) {
                 str = MyServer.aes.decrypt(din.readUTF());
-                p = Pattern.matches("%[a-z]*%", str);
+                p = Pattern.matches("%[a-zA-Z]*%", str);
                 System.out.println("client " + sc.getid() + " says: " + str);
                 if (p) {
                     if (str.equals("%enableencryption%")) {
                         encryptflag = 1;
                         continue;
-                    } else if (str.equals("%disableencryption%")) {
+                    }
+                    if (str.equals("%disableencryption%")) {
                         encryptflag = 0;
                         continue;
                     }
-                    if(str.equals("%decrypt%")) {
+                    if (str.equals("%decrypt%")) {
                         str = MyServer.aes.decrypt(din.readUTF());
                         dout.writeUTF(MyServer.aes.encrypt(dec.decrypt(str)));
                         dout.flush();
@@ -454,23 +455,32 @@ class Manager extends Thread {
                         synchronized (MyServer.synchronizer) {
                             for (i = 0; i < 10; i++) {
                                 if (so[i].getid() == sc.getid()) {
-                                    System.out.println("exitting "+sc.getid());
-                                    System.out.println("number of sockets is "+numberofsockets[0]);
+                                    System.out.println("exitting " + sc.getid());
+                                    System.out.println("number of sockets is " + numberofsockets[0]);
                                     RSdout[i] = null;
                                     so[i].setid(-1);
                                     so[i].setSocket(null);
                                     so[i].setUsername(null);
                                     numberofsockets[0]--;
                                     onlineusers[i] = null;
-                                    System.out.println("number of sockets is "+numberofsockets[0]);
+                                    System.out.println("number of sockets is " + numberofsockets[0]);
                                     break;
                                 }
                             }
                             break;
                         }
-                    }
-                    String hash;
-                    if(str.equals("%file%")) {
+                    } else if (str.equals("%NAS%")) {
+                        NASfilelist = "";
+                        File directory = new File("D:/");
+                        File[] contents = directory.listFiles();
+                        for (File f : contents) {
+                            NASfilelist += new String(f.getName() + "\n");
+                        }
+                        System.out.println(NASfilelist);
+                        dout.writeUTF(MyServer.aes.encrypt(NASfilelist));
+                        dout.flush();
+                        System.out.println(MyServer.aes.decrypt(din.readUTF()));
+                    } else if (str.equals("%file%")) {
                         hash = MyServer.aes.decrypt(din.readUTF());
                         System.out.println("HASH " + hash);
                         FileName = MyServer.aes.decrypt(din.readUTF());
@@ -721,7 +731,12 @@ class MyServer {
         }
         ServerSocket ss = new ServerSocket(4949);
         System.out.println("Server has started");
-        System.out.printf("The current shell is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
+        System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
+        File directory = new File("E:/");
+        File[] contents = directory.listFiles();
+        for (File f : contents) {
+            System.out.println(f.getName());
+        }
         Connector con = new Connector(ss, so);
         con.start();
         Scanner in = new Scanner(System.in);

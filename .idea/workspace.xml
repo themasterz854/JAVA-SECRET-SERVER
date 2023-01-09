@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="SERVER:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue">
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="local" />
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/MyServer.java" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectId" id="1w1zw8XII7ZICZSViddx42HhVxT" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Zaid/IdeaProjects/JAVA-SECRET-SERVER&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Application.MyServer">
+    <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="MyServer" />
+      <module name="JAVA-SECRET-SERVER" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SERVER.jar" type="JarApplication" temporary="true">
+      <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test.jar" type="JarApplication" temporary="true">
+      <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/test_jar/test.jar" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.MyServer" />
+      <item itemvalue="JAR Application.test.jar" />
+      <item itemvalue="JAR Application.SERVER.jar" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JAR Application.SERVER.jar" />
+        <item itemvalue="JAR Application.test.jar" />
+        <item itemvalue="JAR Application.SERVER.jar" />
+        <item itemvalue="JAR Application.test.jar" />
+        <item itemvalue="Application.MyServer" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="" />
+      <created>1627641118973</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1627641118973</updated>
+    </task>
+    <task id="LOCAL-00001" summary="changed prject name">
+      <created>1627641340066</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1627641340066</updated>
+    </task>
+    <task id="LOCAL-00002" summary="implemented exit function">
+      <created>1627755246300</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1627755246300</updated>
+    </task>
+    <task id="LOCAL-00003" summary="styling done on client side, exit implemented properly">
+      <created>1628439790629</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1628439790629</updated>
+    </task>
+    <task id="LOCAL-00004" summary="privatisation in client">
+      <created>1628610187911</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1628610187912</updated>
+    </task>
+    <task id="LOCAL-00005" summary="privatisation in client">
+      <created>1628613043306</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1628613043306</updated>
+    </task>
+    <task id="LOCAL-00006" summary="finalized the project">
+      <created>1628766539973</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1628766539973</updated>
+    </task>
+    <task id="LOCAL-00007" summary="finalized the project">
+      <created>1628767066414</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1628767066414</updated>
+    </task>
+    <task id="LOCAL-00008" summary="privatisation of server &#10;now finalized :)">
+      <created>1628790187644</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1628790187644</updated>
+    </task>
+    <task id="LOCAL-00009" summary="added sha256 hashing for file">
+      <created>1641822950410</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1641822950410</updated>
+    </task>
+    <task id="LOCAL-00010" summary="code cleanup">
+      <created>1655145395908</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1655145395908</updated>
+    </task>
+    <task id="LOCAL-00011" summary="patch test">
+      <created>1655147318195</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1655147318195</updated>
+    </task>
+    <task id="LOCAL-00012" summary="patch test">
+      <created>1655147427559</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1655147427559</updated>
+    </task>
+    <task id="LOCAL-00013" summary="fixed new account creation">
+      <created>1662228592298</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1662228592298</updated>
+    </task>
+    <task id="LOCAL-00014" summary="properly fixed new account creation">
+      <created>1662232748901</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1662232748901</updated>
+    </task>
+    <task id="LOCAL-00015" summary="added AES support for all communication &#10;need to add AES support for files">
+      <created>1662237083740</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1662237083740</updated>
+    </task>
+    <task id="LOCAL-00016" summary="public key exchange successful">
+      <created>1664896339273</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1664896339273</updated>
+    </task>
+    <task id="LOCAL-00017" summary="added file transfer with AES">
+      <created>1667232850383</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1667232850383</updated>
+    </task>
+    <task id="LOCAL-00018" summary="version2">
+      <created>1669545152141</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1669545152142</updated>
+    </task>
+    <task id="LOCAL-00019" summary="sending files using thread, added default downloads folder">
+      <created>1670152391750</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1670152391750</updated>
+    </task>
+    <task id="LOCAL-00020" summary="symmetric key transfer using rsa successful&#10;now to implement it app wide">
+      <created>1670155107476</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1670155107476</updated>
+    </task>
+    <task id="LOCAL-00021" summary="symmetric aes 128-bit key transfer successful&#10;might change to 256-bit later, requires reimplementation of core crypto functions">
+      <created>1672153490635</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1672153490635</updated>
+    </task>
+    <task id="LOCAL-00022" summary="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue">
+      <created>1672469425461</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1672469425461</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="CUSTOM_BOOLEAN_PROPERTIES">
+                <map>
+                  <entry key="Show.Git.Branches" value="true" />
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="local" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="changed prject name" />
+    <MESSAGE value="implemented exit function" />
+    <MESSAGE value="styling done on client side, exit implemented properly" />
+    <MESSAGE value="privatisation in client" />
+    <MESSAGE value="finalized the project" />
+    <MESSAGE value="privatisation of server &#10;now finalized :)" />
+    <MESSAGE value="added sha256 hashing for file" />
+    <MESSAGE value="added AES and code cleanup" />
+    <MESSAGE value="patch test" />
+    <MESSAGE value="added AES and code cleanup" />
+    <MESSAGE value="fixed new account creation" />
+    <MESSAGE value="properly fixed new account creation" />
+    <MESSAGE value="added AES support for all communication &#10;need to add AES support for files" />
+    <MESSAGE value="public key exchange successful" />
+    <MESSAGE value="added file transfer with AES" />
+    <MESSAGE value="version2" />
+    <MESSAGE value="sending files using thread, added default downloads folder" />
+    <MESSAGE value="symmetric key transfer using rsa successful&#10;now to implement it app wide" />
+    <MESSAGE value="symmetric aes 128-bit key transfer successful&#10;might change to 256-bit later, requires reimplementation of core crypto functions" />
+    <MESSAGE value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
+    <option name="LAST_COMMIT_MESSAGE" value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+</project>
