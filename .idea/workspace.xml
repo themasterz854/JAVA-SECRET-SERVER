@@ -9,14 +9,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="upload download from NAS done, need to implement delete function">
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +92,7 @@
         <item itemvalue="JAR Application.test.jar" />
         <item itemvalue="JAR Application.SERVER.jar" />
         <item itemvalue="JAR Application.test.jar" />
-        <item itemvalue="Application.MyServer" />
+        <item itemvalue="JAR Application.SERVER.jar" />
       </list>
     </recent_temporary>
   </component>
