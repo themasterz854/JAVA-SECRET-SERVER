@@ -9,11 +9,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue">
-      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="upload download from NAS done, need to implement delete function">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -258,7 +260,14 @@
       <option name="project" value="LOCAL" />
       <updated>1672469425461</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="nas implementation started">
+      <created>1673265769081</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1673265769081</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -321,7 +330,8 @@
     <MESSAGE value="symmetric key transfer using rsa successful&#10;now to implement it app wide" />
     <MESSAGE value="symmetric aes 128-bit key transfer successful&#10;might change to 256-bit later, requires reimplementation of core crypto functions" />
     <MESSAGE value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
-    <option name="LAST_COMMIT_MESSAGE" value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
+    <MESSAGE value="nas implementation started" />
+    <option name="LAST_COMMIT_MESSAGE" value="nas implementation started" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
