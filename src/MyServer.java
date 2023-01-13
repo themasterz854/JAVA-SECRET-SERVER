@@ -848,6 +848,7 @@ class AsyncUploader extends Thread {
                         file = new File(MyServer.NASTarget + "/" + f.getName());
                         if (!file.exists()) {
                             Files.copy(f.toPath(), file.toPath());
+                            System.out.println("Copying new file" + f.getName());
                         }
                         FileData = new byte[(int) file.length()];
                         md1 = MessageDigest.getInstance("SHA-256");

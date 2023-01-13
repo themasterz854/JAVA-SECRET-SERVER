@@ -9,13 +9,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="removed classpath from MANIFEST.MF file, which was causing the app jar to not execute properly on other machines">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,17 +52,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Zaid/IdeaProjects/JAVA-SECRET-SERVER&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/Zaid/IdeaProjects/JAVA-SECRET-SERVER",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Application.MyServer">
     <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MyServer" />
@@ -72,11 +71,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SERVER.jar" type="JarApplication" temporary="true">
-      <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method v="2" />
-    </configuration>
     <configuration name="test.jar" type="JarApplication" temporary="true">
       <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/test_jar/test.jar" />
       <method v="2" />
@@ -84,15 +78,12 @@
     <list>
       <item itemvalue="Application.MyServer" />
       <item itemvalue="JAR Application.test.jar" />
-      <item itemvalue="JAR Application.SERVER.jar" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="JAR Application.SERVER.jar" />
+        <item itemvalue="Application.MyServer" />
         <item itemvalue="JAR Application.test.jar" />
-        <item itemvalue="JAR Application.SERVER.jar" />
         <item itemvalue="JAR Application.test.jar" />
-        <item itemvalue="JAR Application.SERVER.jar" />
       </list>
     </recent_temporary>
   </component>
@@ -266,7 +257,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673265769081</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="delete functionality implemented , I guess NAS is done&#10;I forgot to upload artifacts">
+      <created>1673491590009</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1673491590009</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -330,7 +328,8 @@
     <MESSAGE value="symmetric aes 128-bit key transfer successful&#10;might change to 256-bit later, requires reimplementation of core crypto functions" />
     <MESSAGE value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
     <MESSAGE value="nas implementation started" />
-    <option name="LAST_COMMIT_MESSAGE" value="nas implementation started" />
+    <MESSAGE value="delete functionality implemented , I guess NAS is done&#10;I forgot to upload artifacts" />
+    <option name="LAST_COMMIT_MESSAGE" value="delete functionality implemented , I guess NAS is done&#10;I forgot to upload artifacts" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
