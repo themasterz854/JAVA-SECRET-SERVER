@@ -582,7 +582,28 @@ class Manager extends Thread {
                             System.gc();
                         }
                     } else if (str.equals("%NASupload%")) {
-                        hash = new StringBuilder(MyServer.aes.decrypt(din.readUTF()));
+                        long filesize = din.readLong();
+                        dout.writeUTF("READ filessize");
+                        dout.flush();
+                        File f = new File("./file");
+                        FileOutputStream fos = new FileOutputStream(f);
+                        System.out.println(filesize);
+                        byte[] receivedData;
+                        int received = 2;
+
+                        while (true) {
+                            received = din.readInt();
+                            System.out.println("received partial bytes" + received);
+                            if (received < 0) {
+                                break;
+                            }
+                            receivedData = new byte[received];
+                            din.readFully(receivedData);
+                            fos.write(receivedData);
+                        }
+                        fos.close();
+                        System.out.println("received the file");
+                        /*hash = new StringBuilder(MyServer.aes.decrypt(din.readUTF()));
                         String fileName = MyServer.aes.decrypt(din.readUTF());
                         System.out.println("Receiving hash for file " + fileName + "\n" + hash + "\n");
                         int fileSize = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
@@ -598,7 +619,7 @@ class Manager extends Thread {
                         fos.close();
                         System.out.println("Received file" + fileName);
                         receivedData = null;
-                        System.gc();
+                        System.gc();*/
                     } else if (str.equals("%list%")) {
                         count = 0;
                         for (i = 0; count < numberofsockets[0]; i++) {

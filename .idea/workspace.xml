@@ -12,6 +12,7 @@
     <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -262,7 +263,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673491590009</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="starting the most difficult task so far, file splitting and transfering in chunks">
+      <created>1673764254086</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1673764254086</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -327,7 +335,8 @@
     <MESSAGE value="upgraded jdk to 17.0.5 , upgraded javafx to version 19, removed unnecessary libraries, fixed uspass.txt issue" />
     <MESSAGE value="nas implementation started" />
     <MESSAGE value="delete functionality implemented , I guess NAS is done&#10;I forgot to upload artifacts" />
-    <option name="LAST_COMMIT_MESSAGE" value="delete functionality implemented , I guess NAS is done&#10;I forgot to upload artifacts" />
+    <MESSAGE value="starting the most difficult task so far, file splitting and transfering in chunks" />
+    <option name="LAST_COMMIT_MESSAGE" value="starting the most difficult task so far, file splitting and transfering in chunks" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
