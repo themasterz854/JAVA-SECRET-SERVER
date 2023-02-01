@@ -1,3 +1,4 @@
+package MyServer;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -20,6 +21,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import static MyServer.MyServer.*;
 import static java.lang.Character.toLowerCase;
 
 class rsa {
@@ -411,6 +413,7 @@ class Manager extends Thread {
         this.numberofsockets = numberofsockets;
         this.onlineusers = onlineusers;
     }
+
     public void run() {
         try {
             int i;
@@ -436,7 +439,7 @@ class Manager extends Thread {
             while (true) {
 
                 if (exitflag == 0) {
-                    str = MyServer.aes.decrypt(din.readUTF());
+                    str = aes.decrypt(din.readUTF());
                 }
                 p = Pattern.matches("%[a-zA-Z]*%", str);
                 System.out.println("client " + sc.getid() + " says: " + str);
@@ -450,14 +453,15 @@ class Manager extends Thread {
                         continue;
                     }
                     if (str.equals("%decrypt%")) {
-                        str = MyServer.aes.decrypt(din.readUTF());
-                        dout.writeUTF(MyServer.aes.encrypt(dec.decrypt(str)));
+                        str = aes.decrypt(din.readUTF());
+                        dout.writeUTF(aes.encrypt(dec.decrypt(str)));
                         dout.flush();
                         continue;
                     }
+
                     if (str.equals("%exit%")) {
-                        dout.writeUTF(MyServer.aes.encrypt("exit"));
-                        synchronized (MyServer.synchronizer) {
+                        dout.writeUTF(aes.encrypt("exit"));
+                        synchronized (synchronizer) {
                             for (i = 0; i < 10; i++) {
                                 if (so[i].getid() == sc.getid()) {
                                     System.out.println("exitting " + sc.getid());
@@ -478,7 +482,7 @@ class Manager extends Thread {
                         NASfilelist = new StringBuilder("%NAS%");
                         File[] contents = new File[0];
                         while (NASfilelist.toString().equals("%NAS%")) {
-                            contents = MyServer.NASSource.listFiles();
+                            contents = NASSource.listFiles();
                             NASfilelist = new StringBuilder();
                             assert contents != null;
                             for (File f : contents) {
@@ -488,9 +492,9 @@ class Manager extends Thread {
                                 NASfilelist.append(f.getName()).append("\n");
                             }
                             System.out.println(NASfilelist);
-                            dout.writeUTF(MyServer.aes.encrypt(NASfilelist.toString()));
+                            dout.writeUTF(aes.encrypt(NASfilelist.toString()));
                             dout.flush();
-                            NASfilelist = new StringBuilder(MyServer.aes.decrypt(din.readUTF()));
+                            NASfilelist = new StringBuilder(aes.decrypt(din.readUTF()));
                         }
                         if (NASfilelist.toString().equals("%exit%")) {
                             str = "%exit%";
@@ -498,7 +502,7 @@ class Manager extends Thread {
                             continue;
 
                         }
-                        String command = MyServer.aes.decrypt(din.readUTF());
+                        String command = aes.decrypt(din.readUTF());
                         if (command.equals("%receive%")) {
                             System.out.println(NASfilelist);
                             String[] NASFileArray = NASfilelist.toString().split("\n");
@@ -521,34 +525,36 @@ class Manager extends Thread {
                             for (File f : NASFileObjects) {
                                 totalsize += f.length();
                             }
-                            dout.writeUTF(MyServer.aes.encrypt(Long.toString(totalsize)));
+                            dout.writeUTF(aes.encrypt(Long.toString(totalsize)));
                             dout.flush();
                             MessageDigest md = MessageDigest.getInstance("SHA-256");
                             for (File f : NASFileObjects) {
                                 FileSize = f.length();
                                 FileInputStream fis = new FileInputStream(f);
-                                dout.writeUTF(MyServer.aes.encrypt("%NASFile%"));
+                                dout.writeUTF(aes.encrypt("%NASFile%"));
                                 dout.flush();
-                                dout.writeUTF(MyServer.aes.encrypt(f.getName()));
+                                dout.writeUTF(aes.encrypt(f.getName()));
                                 dout.flush();
                                 int read;
-                                byte[] sendData = new byte[MyServer.FileBufferSize];
+                                byte[] sendData = new byte[FileBufferSize];
+                                byte[] readbytes;
+                                byte[] encryptedSendData;
                                 while ((read = fis.read(sendData)) > 0) {
-                                    byte[] readbytes = new byte[read];
+                                    readbytes = new byte[read];
                                     System.arraycopy(sendData, 0, readbytes, 0, read);
                                     md.update(readbytes);
-                                    byte[] encryptedSendData = MyServer.aes.encrypt(readbytes);
+                                    encryptedSendData = aes.encrypt(readbytes);
                                     int encryptedsize = encryptedSendData.length;
-                                    dout.writeUTF(MyServer.aes.encrypt(Integer.toString(read)));
+                                    dout.writeUTF(aes.encrypt(Integer.toString(read)));
                                     dout.flush();
-                                    dout.writeUTF(MyServer.aes.encrypt(Integer.toString(encryptedsize)));
+                                    dout.writeUTF(aes.encrypt(Integer.toString(encryptedsize)));
                                     dout.flush();
                                     dout.write(encryptedSendData, 0, encryptedsize);
                                     dout.flush();
                                     System.out.println("sent bytes " + read);
-                                    System.out.println(MyServer.aes.decrypt(din.readUTF()));
+                                    System.out.println(aes.decrypt(din.readUTF()));
                                 }
-                                dout.writeUTF(MyServer.aes.encrypt(Integer.toString(read)));
+                                dout.writeUTF(aes.encrypt(Integer.toString(read)));
                                 dout.flush();
                                 System.out.println("sent the file");
                                 byte[] digest = md.digest();
@@ -556,9 +562,10 @@ class Manager extends Thread {
                                 for (byte x : digest) {
                                     hash.append(String.format("%02x", x));
                                 }
-                                dout.writeUTF(MyServer.aes.encrypt(hash.toString()));
+                                dout.writeUTF(aes.encrypt(hash.toString()));
                                 dout.flush();
-
+                                sendData = readbytes = encryptedSendData = null;
+                                System.gc();
                             }
                         } else if (command.equals("%delete%")) {
                             String[] NASFileArray = NASfilelist.toString().split("\n");
@@ -570,70 +577,71 @@ class Manager extends Thread {
                                         break;
                                     }
                                 }
-                                synchronized (MyServer.filesynchronizer) {
+                                synchronized (filesynchronizer) {
                                     f.delete();
-                                    if (!MyServer.SourceDown) {
-                                        f = new File(MyServer.NASBunker + "/" + f.getName());
+                                    if (!SourceDown) {
+                                        f = new File(NASBunker + "/" + f.getName());
                                         f.delete();
                                     }
-                                    dout.writeUTF(MyServer.aes.encrypt("Deleted file " + f.getName()));
+                                    dout.writeUTF(aes.encrypt("Deleted file " + f.getName()));
                                     dout.flush();
                                 }
+                                f = null;
                             }
-                            dout.writeUTF(MyServer.aes.encrypt("All the Files have been DELETED"));
+                            dout.writeUTF(aes.encrypt("All the Files have been DELETED"));
                             dout.flush();
                         }
-
                     } else if (str.equals("%file%")) {
-                        int n = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                        int n = Integer.parseInt(aes.decrypt(din.readUTF()));
                         for (i = 0; i < n; i++) {
-                            synchronized (MyServer.synchronizer) {
-                                dout.writeUTF(MyServer.aes.encrypt("READ filessize"));
+                            synchronized (synchronizer) {
+                                dout.writeUTF(aes.encrypt("READ filessize"));
                                 dout.flush();
-                                FileName = MyServer.aes.decrypt(din.readUTF());
+                                FileName = aes.decrypt(din.readUTF());
                                 byte[] receivedData;
                                 int received;
                                 int actualreceived;
-                                curr_RSdout.writeUTF(MyServer.aes.encrypt("%file%"));
+                                curr_RSdout.writeUTF(aes.encrypt("%file%"));
                                 curr_RSdout.flush();
-                                curr_RSdout.writeUTF(MyServer.aes.encrypt(FileName));
+                                curr_RSdout.writeUTF(aes.encrypt(FileName));
                                 curr_RSdout.flush();
                                 while (true) {
-                                    actualreceived = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                                    actualreceived = Integer.parseInt(aes.decrypt(din.readUTF()));
                                     if (actualreceived < 0) {
                                         break;
                                     }
-                                    received = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                                    received = Integer.parseInt(aes.decrypt(din.readUTF()));
                                     receivedData = new byte[received];
+                                    System.gc();
                                     din.readFully(receivedData);
-                                    curr_RSdout.writeUTF(MyServer.aes.encrypt(Integer.toString(actualreceived)));
+                                    curr_RSdout.writeUTF(aes.encrypt(Integer.toString(actualreceived)));
                                     curr_RSdout.flush();
-                                    curr_RSdout.writeUTF(MyServer.aes.encrypt(Integer.toString(received)));
+                                    curr_RSdout.writeUTF(aes.encrypt(Integer.toString(received)));
                                     curr_RSdout.flush();
                                     curr_RSdout.write(receivedData, 0, received);
                                     curr_RSdout.flush();
                                     System.out.println("sent partial bytes" + actualreceived);
-                                    dout.writeUTF(MyServer.aes.encrypt("ACK"));
+                                    dout.writeUTF(aes.encrypt("ACK"));
                                     dout.flush();
                                 }
 
-                                curr_RSdout.writeUTF(MyServer.aes.encrypt(Integer.toString(actualreceived)));
+                                curr_RSdout.writeUTF(aes.encrypt(Integer.toString(actualreceived)));
                                 curr_RSdout.flush();
                                 hash = new StringBuilder(din.readUTF());
                                 curr_RSdout.writeUTF(hash.toString());
                                 curr_RSdout.flush();
+                                receivedData = null;
                             }
                         }
-                        System.gc();
                     } else if (str.equals("%NASupload%")) {
-                        synchronized (MyServer.filesynchronizer) {
-                            int n = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                        synchronized (filesynchronizer) {
+                            int n = Integer.parseInt(aes.decrypt(din.readUTF()));
                             for (i = 0; i < n; i++) {
-                                dout.writeUTF(MyServer.aes.encrypt("READ filessize"));
+                                dout.writeUTF(aes.encrypt("READ filessize"));
                                 dout.flush();
-                                String filename = MyServer.aes.decrypt(din.readUTF());
-                                File f = new File(MyServer.NASSource + filename);
-                                File g = new File(MyServer.NASBunker + filename);
+                                String filename = aes.decrypt(din.readUTF());
+                                File f = new File(NASSource + filename);
+                                File g = new File(NASBunker + filename);
                                 FileOutputStream fos = new FileOutputStream(f);
                                 FileOutputStream gos = new FileOutputStream(g);
 
@@ -641,27 +649,31 @@ class Manager extends Thread {
                                 int received;
                                 int actualreceived;
                                 while (true) {
-                                    actualreceived = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                                    actualreceived = Integer.parseInt(aes.decrypt(din.readUTF()));
                                     if (actualreceived < 0) {
                                         break;
                                     }
-                                    received = Integer.parseInt(MyServer.aes.decrypt(din.readUTF()));
+                                    received = Integer.parseInt(aes.decrypt(din.readUTF()));
                                     receivedData = new byte[received];
                                     din.readFully(receivedData);
-                                    receivedData = MyServer.aes.decrypt(receivedData);
+                                    receivedData = aes.decrypt(receivedData);
                                     fos.write(receivedData);
                                     gos.write(receivedData);
                                     System.out.println("received partial bytes" + actualreceived);
-                                    dout.writeUTF(MyServer.aes.encrypt("ACK"));
+                                    dout.writeUTF(aes.encrypt("ACK"));
                                     dout.flush();
                                 }
-                                System.out.println("receiving hash " + MyServer.aes.decrypt(din.readUTF()));
+                                System.out.println("receiving hash " + aes.decrypt(din.readUTF()));
                                 fos.close();
                                 gos.close();
+                                receivedData = null;
+                                f = g = null;
+                                fos = gos = null;
                                 System.out.println("received the file " + filename);
-
+                                System.gc();
                             }
                         }
+
                     } else if (str.equals("%list%")) {
                         count = 0;
                         for (i = 0; count < numberofsockets[0]; i++) {
@@ -674,37 +686,38 @@ class Manager extends Thread {
                                 continue;
                             }
                             if (RSdout[i] == null) {
-                                synchronized (MyServer.synchronizer) {
+                                synchronized (synchronizer) {
                                     RSdout[i] = new DataOutputStream(so[i].getSocket().getOutputStream());
                                 }
 
                             }
-                            dout.writeUTF(MyServer.aes.encrypt((so[i].getusername() + " " + so[i].getid())));
+                            dout.writeUTF(aes.encrypt((so[i].getusername() + " " + so[i].getid())));
                             dout.flush();
                             count++;
                         }
                         System.out.println("end of list");
-                        dout.writeUTF(MyServer.aes.encrypt("end of list"));
+                        dout.writeUTF(aes.encrypt("end of list"));
                         dout.flush();
                     } } else {
-                    synchronized (MyServer.synchronizer) {
+                    synchronized (synchronizer) {
                         data = str.split(" ");
                         if (data[0].equals("%chat%")) {
                             chatid = Integer.parseInt(data[1]);
                             curr_RSdout = RSdout[chatid];
                         } else if (data[0].equals("%others%")) {
                             data = str.split("%others% ");
-                            dout.writeUTF(MyServer.aes.encrypt(data[1]));
+                            dout.writeUTF(aes.encrypt(data[1]));
                             dout.flush();
                         } else {
                             if (encryptflag == 1)
-                                curr_RSdout.writeUTF(MyServer.aes.encrypt((sc.getid() + " " + en.encrypt(str))));
+                                curr_RSdout.writeUTF(aes.encrypt((sc.getid() + " " + en.encrypt(str))));
                             else
-                                curr_RSdout.writeUTF(MyServer.aes.encrypt((sc.getid() + " " + str)));
+                                curr_RSdout.writeUTF(aes.encrypt((sc.getid() + " " + str)));
                             curr_RSdout.flush();
                         }
                     }
                 }
+                System.gc();
             }
             din.close();
             dout.close();
@@ -719,7 +732,6 @@ class Connector extends Thread{
     private final ServerSocket ss;
     private final CustomSocket[] so;
     private final File passfile = new File(System.getProperty("user.home").replace('\\', '/') + "/Desktop/uspass.txt");
-    private FileWriter filewriter;
     private final int[] numberofsockets = new int[1];
     private String[] filedata;
 
@@ -779,7 +791,7 @@ class Connector extends Thread{
                 try {
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                     PublicKey publickey = keyFactory.generatePublic(publicKeySpec);
-                    dout.writeUTF(MyServer.rsaobj.encrypt(MyServer.aes.encryptionKey, publickey));
+                    dout.writeUTF(rsaobj.encrypt(aes.encryptionKey, publickey));
                     dout.flush();
                     System.out.println("sent aes key\n");
                 } catch (IOException e) {
@@ -788,7 +800,7 @@ class Connector extends Thread{
                 } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
                     throw new RuntimeException(e);
                 }
-                str = MyServer.aes.decrypt(din.readUTF());
+                str = aes.decrypt(din.readUTF());
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
@@ -796,9 +808,9 @@ class Connector extends Thread{
                 if (str.equals("%newaccount%")) {
                     int existflag = 0;
                     System.out.println("new account");
-                    filewriter = new FileWriter(passfile, true);
-                    newusername = MyServer.aes.decrypt(din.readUTF());
-                    newpassword = MyServer.aes.decrypt(din.readUTF());
+                    FileWriter filewriter = new FileWriter(passfile, true);
+                    newusername = aes.decrypt(din.readUTF());
+                    newpassword = aes.decrypt(din.readUTF());
                     filereader = new Scanner(passfile);
                     while (filereader.hasNextLine()) {
                         data = filereader.nextLine();
@@ -806,7 +818,7 @@ class Connector extends Thread{
                         filedata = data.split(" ");
                         if (filedata[0].equals(newusername)) {
                             System.out.println("EXISTS");
-                            dout.writeUTF(MyServer.aes.encrypt("exists"));
+                            dout.writeUTF(aes.encrypt("exists"));
                             dout.flush();
                             existflag = 1;
                             break;
@@ -820,8 +832,9 @@ class Connector extends Thread{
                     filewriter.write(enc.encrypt(newusername + " " + newpassword) + "\n");
                     filewriter.flush();
                     filewriter.close();
-                    dout.writeUTF(MyServer.aes.encrypt("account created"));
+                    dout.writeUTF(aes.encrypt("account created"));
                     dout.flush();
+                    System.gc();
                 } else {
                     userdata = str.split(" ");
                     filereader = new Scanner(passfile);
@@ -833,7 +846,7 @@ class Connector extends Thread{
                             flag = 1;
                             for(j=0; j<numberofsockets[0] ; j++) {
                                 if (filedata[0].equals(onlineusers[j])) {
-                                    dout.writeUTF(MyServer.aes.encrypt("User already logged in"));
+                                    dout.writeUTF(aes.encrypt("User already logged in"));
                                     dout.flush();
                                     flag = 0;
                                     break;
@@ -846,21 +859,22 @@ class Connector extends Thread{
                     }
                     filereader.close();
                     if (flag == 1) {
-                        synchronized (MyServer.synchronizer) {
+                        synchronized (synchronizer) {
                             numberofsockets[0]++;
                             onlineusers[numberofsockets[0] - 1] = filedata[0];
                         }
                         so[i].setUsername(filedata[0]);
                         Manager res = new Manager(so[i], i, so, numberofsockets,onlineusers);
-                        dout.writeUTF(MyServer.aes.encrypt("ok"));
+                        dout.writeUTF(aes.encrypt("ok"));
 
                         res.start();
                         System.out.println("Client connected");
                     } else {
-                        dout.writeUTF(MyServer.aes.encrypt("wrong username or password"));
+                        dout.writeUTF(aes.encrypt("wrong username or password"));
                         dout.flush();
                     }
                     flag = 1;
+                    System.gc();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -884,14 +898,15 @@ class AsyncUploader extends Thread {
         StringBuilder hashsource = new StringBuilder(), hashtarget = new StringBuilder();
         while (true) {
             try {
-
-                synchronized (MyServer.filesynchronizer) {
-                    sourcecontents = MyServer.NASSource.listFiles();
-                    targetcontents = MyServer.NASTarget.listFiles();
+                Thread.sleep(1000 * 10);
+                synchronized (filesynchronizer) {
+                    sourcecontents = NASSource.listFiles();
+                    targetcontents = NASTarget.listFiles();
                     System.out.println("Synchronizing files now");
                     assert sourcecontents != null;
                     for (File f : sourcecontents) {
-                        if (f.getName().equals("System Volume Information")) {
+
+                        if (!f.exists() || f.getName().equals("System Volume Information")) {
                             continue;
                         }
                         FileInputStream fis = new FileInputStream(f.getAbsolutePath());
@@ -906,11 +921,9 @@ class AsyncUploader extends Thread {
                                 hashsource.append(String.format("%02x", x));
                             }
                         }
-
                         fis.close();
+                        file = new File(NASTarget + "/" + f.getName());
 
-
-                        file = new File(MyServer.NASTarget + "/" + f.getName());
                         if (!file.exists()) {
                             Files.copy(f.toPath(), file.toPath());
                             System.out.println("Copying new file " + f.getName());
@@ -932,13 +945,15 @@ class AsyncUploader extends Thread {
                             file.delete();
                             Files.copy(f.toPath(), file.toPath());
                         }
+                        md1 = null;
                     }
+
                     assert targetcontents != null;
                     for (File f : targetcontents) {
                         if (f.getName().equals("System Volume Information")) {
                             continue;
                         }
-                        file = new File(MyServer.NASSource + "/" + f.getName());
+                        file = new File(NASSource + "/" + f.getName());
                         if (f.exists() && !file.exists()) {
                             System.out.println("Deleting file " + f.getName());
                             f.delete();
@@ -946,8 +961,10 @@ class AsyncUploader extends Thread {
                     }
                 }
                 System.out.println("Synchronization done");
-                Thread.sleep(1000 * 10);
-
+                sourcecontents = null;
+                targetcontents = null;
+                file = null;
+                System.gc();
             } catch (InterruptedException | NoSuchAlgorithmException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -982,11 +999,11 @@ class MyServer {
         if (!NASSource.exists()) {
             SourceDown = true;
             NASSource = NASBunker;
-            System.out.println("Source down, switching to Bumker");
+            System.out.println("Source down, switching to Bunker");
         }
+
         CustomSocket[] so = new CustomSocket[10];
         String exitstr = "start";
-
         rsaobj.getPublickey();
         rsaobj.getPrivatekey();
         System.out.println(rsaobj.decrypt(rsaobj.encrypt("ABCDEFGHIJKLMNOP", rsaobj.publicKey), rsaobj.privateKey));
@@ -998,11 +1015,13 @@ class MyServer {
         System.out.println("Server has started");
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
 
-        File[] contents = NASSource.listFiles();
+       /* File[] contents = NASSource.listFiles();
         assert contents != null;
         for (File f : contents) {
             System.out.println(f.getName());
         }
+        contents = null;
+        System.gc();*/
         Connector con = new Connector(ss, so);
         con.start();
         AsyncUploader async = new AsyncUploader();
@@ -1013,6 +1032,5 @@ class MyServer {
         }
         in.close();
         System.exit(0);
-
     }
 }
