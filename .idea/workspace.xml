@@ -9,20 +9,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="send receive in chunks of 100 MB implemented">
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/CustomSocket.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/CustomSocket.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Decryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Decryptor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Encryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Encryptor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Sync.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Sync.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/rsa.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/rsa.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AES.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/AsyncUploader.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Connector.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/CustomSocket.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Decryptor.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Encryptor.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Manager.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/Sync.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/rsa.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MyServer/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,26 +71,24 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.rainbow.brackets&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.MyServer">
+  <component name="RunManager">
     <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="MyServer" />
+      <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
       <module name="JAVA-SECRET-SERVER" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="MyServer.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="test.jar" type="JarApplication" temporary="true">
-      <option name="JAR_PATH" value="$PROJECT_DIR$/out/artifacts/test_jar/test.jar" />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="Application.MyServer" />
-      <item itemvalue="JAR Application.test.jar" />
-    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="JAR Application.test.jar" />
         <item itemvalue="Application.MyServer" />
+        <item itemvalue="JAR Application.test.jar" />
         <item itemvalue="JAR Application.test.jar" />
         <item itemvalue="JAR Application.test.jar" />
       </list>

@@ -220,7 +220,7 @@ class AES {
 }
 
 class CustomSocket {
-    private Socket s;
+    private Socket s, cs, ds, us;
     private int id;
 
     CustomSocket() {
@@ -229,8 +229,20 @@ class CustomSocket {
 
     private String username;
 
-    public void setSocket(Socket s) {
+    public void setCommSocket(Socket s) {
         this.s = s;
+    }
+
+    public Socket getChatSocket() {
+        return cs;
+    }
+
+    public void setChatSocket(Socket s) {
+        cs = s;
+    }
+
+    public Socket getUploadSocket() {
+        return us;
     }
 
     public void setid(int id) {
@@ -244,6 +256,19 @@ class CustomSocket {
     public Socket getSocket() {
         return s;
     }
+
+    public void setUploadSocket(Socket s) {
+        us = s;
+    }
+
+    public Socket getDownloadSocket() {
+        return ds;
+    }
+
+    public void setDownloadSocket(Socket s) {
+        ds = s;
+    }
+
 
     public int getid() {
         return id;
@@ -422,13 +447,16 @@ class Manager extends Thread {
             String str = null;
             DataInputStream din = new DataInputStream(sc.getSocket().getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.getSocket().getOutputStream());
-            DataOutputStream[] RSdout = new DataOutputStream[10] ;
+
+            DataOutputStream UploadDout = new DataOutputStream(sc.getUploadSocket().getOutputStream());
+            DataInputStream UploadDin = new DataInputStream(sc.getUploadSocket().getInputStream());
+
+            DataOutputStream[] RSdout = new DataOutputStream[10];
             DataOutputStream curr_RSdout = dout;
             String FileName;
             StringBuilder NASfilelist;
             boolean p;
             long FileSize;
-
             for (i = 0; i < 10; i++) {
                 RSdout[i] = null;
             }
@@ -468,7 +496,7 @@ class Manager extends Thread {
                                     System.out.println("number of sockets is " + numberofsockets[0]);
                                     RSdout[i] = null;
                                     so[i].setid(-1);
-                                    so[i].setSocket(null);
+                                    so[i].setCommSocket(null);
                                     so[i].setUsername(null);
                                     numberofsockets[0]--;
                                     onlineusers[i] = null;
@@ -635,11 +663,11 @@ class Manager extends Thread {
                         }
                     } else if (str.equals("%NASupload%")) {
                         synchronized (filesynchronizer) {
-                            int n = Integer.parseInt(aes.decrypt(din.readUTF()));
+                            int n = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
                             for (i = 0; i < n; i++) {
-                                dout.writeUTF(aes.encrypt("READ filessize"));
-                                dout.flush();
-                                String filename = aes.decrypt(din.readUTF());
+                                UploadDout.writeUTF(aes.encrypt("READ filessize"));
+                                UploadDout.flush();
+                                String filename = aes.decrypt(UploadDin.readUTF());
                                 File f = new File(NASSource + filename);
                                 File g = new File(NASBunker + filename);
                                 FileOutputStream fos = new FileOutputStream(f);
@@ -649,21 +677,22 @@ class Manager extends Thread {
                                 int received;
                                 int actualreceived;
                                 while (true) {
-                                    actualreceived = Integer.parseInt(aes.decrypt(din.readUTF()));
+                                    actualreceived = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
                                     if (actualreceived < 0) {
                                         break;
                                     }
-                                    received = Integer.parseInt(aes.decrypt(din.readUTF()));
+                                    received = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
                                     receivedData = new byte[received];
-                                    din.readFully(receivedData);
+                                    UploadDin.readFully(receivedData);
                                     receivedData = aes.decrypt(receivedData);
+                                    System.gc();
                                     fos.write(receivedData);
                                     gos.write(receivedData);
                                     System.out.println("received partial bytes" + actualreceived);
-                                    dout.writeUTF(aes.encrypt("ACK"));
-                                    dout.flush();
+                                    UploadDout.writeUTF(aes.encrypt("ACK"));
+                                    UploadDout.flush();
                                 }
-                                System.out.println("receiving hash " + aes.decrypt(din.readUTF()));
+                                System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
                                 fos.close();
                                 gos.close();
                                 receivedData = null;
@@ -763,12 +792,17 @@ class Connector extends Thread{
                 testsocket = ss.accept();
                 for (i = 0; i < n; i++) {
                     if (so[i].getid() == -1) {
-                        so[i].setSocket(testsocket);
-                        System.out.println("id assigned " + i);
                         break;
                     }
                 }
-
+                so[i].setCommSocket(testsocket);
+                testsocket = ss.accept();
+                so[i].setChatSocket(testsocket);
+                testsocket = ss.accept();
+                so[i].setDownloadSocket(testsocket);
+                testsocket = ss.accept();
+                so[i].setUploadSocket(testsocket);
+                System.out.println("id assigned " + i);
                 dout = new DataOutputStream(so[i].getSocket().getOutputStream());
                 din = new DataInputStream(so[i].getSocket().getInputStream());
 
@@ -787,7 +821,7 @@ class Connector extends Thread{
                 byte[] publickeyBytes = new byte[keylength];
                 din.read(publickeyBytes, 0, keylength);
                 EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
-                System.out.println("receive public key\n");
+                System.out.println("received public key\n");
                 try {
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                     PublicKey publickey = keyFactory.generatePublic(publicKeySpec);
@@ -1015,13 +1049,13 @@ class MyServer {
         System.out.println("Server has started");
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
 
-       /* File[] contents = NASSource.listFiles();
+        File[] contents = NASSource.listFiles();
         assert contents != null;
         for (File f : contents) {
             System.out.println(f.getName());
         }
         contents = null;
-        System.gc();*/
+        System.gc();
         Connector con = new Connector(ss, so);
         con.start();
         AsyncUploader async = new AsyncUploader();
