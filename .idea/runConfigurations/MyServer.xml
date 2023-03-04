@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MyServer" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="MyServer" />
+  <configuration default="false" name="MyServer" type="Application" factoryName="Application" singleton="true" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
     <module name="JAVA-SECRET-SERVER" />
+    <option name="PROGRAM_PARAMETERS" value="4949" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
