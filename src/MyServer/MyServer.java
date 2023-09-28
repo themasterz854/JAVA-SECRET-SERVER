@@ -1,8 +1,7 @@
 package MyServer;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+
+import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
@@ -311,10 +310,10 @@ class rsa {
 
 class AES {
 
-    protected String encryptionKey;
     private static final String characterEncoding = "UTF-8";
     private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
     private static final String aesEncryptionAlgorithm = "AES";
+    protected String encryptionKey;
 
     public AES() throws NoSuchAlgorithmException {
         SecureRandom random = new SecureRandom();
@@ -400,18 +399,16 @@ class AES {
         return decryptedText;
     }
 
-
 }
 
 class CustomSocket {
     private Socket s, cs, ds, us;
     private int id;
+    private String username;
 
     CustomSocket() {
         id = -1;
     }
-
-    private String username;
 
     public void setCommSocket(Socket s) {
         this.s = s;
@@ -429,6 +426,10 @@ class CustomSocket {
         return us;
     }
 
+    public void setUploadSocket(Socket s) {
+        us = s;
+    }
+
     public void setid(int id) {
         this.id = id;
     }
@@ -439,10 +440,6 @@ class CustomSocket {
 
     public Socket getSocket() {
         return s;
-    }
-
-    public void setUploadSocket(Socket s) {
-        us = s;
     }
 
     public Socket getDownloadSocket() {
@@ -462,22 +459,23 @@ class CustomSocket {
         return username;
     }
 }
-class Encryptor{
 
-    public String encrypt(String data){
+class Encryptor {
+
+    public String encrypt(String data) {
         String random1 = "!%*#(}]";
         String random2 = "@$^&)[\\";
         String random3 = "<>?:;_{|`";
         char[] encrypteddata;
         Random random = new Random();
-        IntStream randomint = random.ints(10,0,9);
+        IntStream randomint = random.ints(10, 0, 9);
         int[] randomarray = randomint.toArray();
         int randomiterator = 0;
         encrypteddata = new char[900];
-        int i,j=0,n,f;
-        char c,en = 'a';
+        int i, j = 0, n, f;
+        char c, en = 'a';
         n = data.length();
-        for(i =0; i<n; i++) {
+        for (i = 0; i < n; i++) {
             c = data.charAt(i);
             if (c >= '0' && c <= '9') {
                 switch (c) {
@@ -511,16 +509,16 @@ class Encryptor{
                 } else {
                     f = c - 16;
                 }
-                if(f >= 58  && f <67) {
+                if (f >= 58 && f < 67) {
 
                     encrypteddata[j++] = random1.charAt(randomarray[randomiterator++ % 10] % 7);
-                    en = (char)(f-9);
-                } else if(f >= 67 && f <=74) {
+                    en = (char) (f - 9);
+                } else if (f >= 67 && f <= 74) {
 
                     encrypteddata[j++] = random2.charAt(randomarray[randomiterator++ % 10] % 7);
-                    en = (char)(f - 18);
+                    en = (char) (f - 18);
                 } else
-                    en = (char)f;
+                    en = (char) f;
             }
             encrypteddata[j++] = en;
         }
@@ -529,14 +527,15 @@ class Encryptor{
         return encryptedstr;
     }
 }
-class Decryptor{
-    public String decrypt(String data){
+
+class Decryptor {
+    public String decrypt(String data) {
         char[] decrypteddata = new char[900];
-        int i,j,n,flag ,f;
+        int i, j, n, flag, f;
         char c;
         n = data.length();
-        j =0;
-        for(i=0; i<n; i++) {
+        j = 0;
+        for (i = 0; i < n; i++) {
             flag = 0;
             c = data.charAt(i);
             if (c == '~') {
@@ -565,13 +564,13 @@ class Decryptor{
                 f = c + 16;
                 c = (char) (f + 18);
 
-            } else if(c == '!' || c == '#' || c == '%' || c == '*' || c == '(' || c == '}' || c == ']') {
+            } else if (c == '!' || c == '#' || c == '%' || c == '*' || c == '(' || c == '}' || c == ']') {
                 c = data.charAt(++i);
                 f = c + 16;
-                c = (char)(f+9);
-            } else if(c >= '0' && c <= '9') {
-                f = c +16;
-                c = (char)f;
+                c = (char) (f + 9);
+            } else if (c >= '0' && c <= '9') {
+                f = c + 16;
+                c = (char) f;
             } else {
                 switch (c) {
                     case 'u' -> c = '1';
@@ -589,7 +588,7 @@ class Decryptor{
                 }
             }
             if (flag == 1 && (c >= 'A' && c <= 'Z')) {
-                c  = toLowerCase(c);
+                c = toLowerCase(c);
             }
             decrypteddata[j++] = c;
         }
@@ -599,23 +598,25 @@ class Decryptor{
     }
 
 }
-class Sync{
-    Sync(){
+
+class Sync {
+    Sync() {
 
     }
 }
+
 class Manager extends Thread {
 
 
     private final CustomSocket sc;
     private final CustomSocket[] so;
-    private final int[] numberofsockets ;
-    private final String[] onlineusers ;
+    private final int[] numberofsockets;
+    private final String[] onlineusers;
     private final Decryptor dec = new Decryptor();
     private final Encryptor en = new Encryptor();
 
 
-    Manager(CustomSocket sc, int id, CustomSocket[] so,int[] numberofsockets,String[] onlineusers){
+    Manager(CustomSocket sc, int id, CustomSocket[] so, int[] numberofsockets, String[] onlineusers) {
         this.sc = sc;
         this.so = so;
         this.sc.setid(id);
@@ -631,6 +632,9 @@ class Manager extends Thread {
             String str = null;
             DataInputStream din = new DataInputStream(sc.getSocket().getInputStream());
             DataOutputStream dout = new DataOutputStream(sc.getSocket().getOutputStream());
+
+            DataInputStream chatdin = new DataInputStream(sc.getChatSocket().getInputStream());
+            DataOutputStream chatdout = new DataOutputStream(sc.getChatSocket().getOutputStream());
 
             DataOutputStream UploadDout = new DataOutputStream(sc.getUploadSocket().getOutputStream());
             DataInputStream UploadDin = new DataInputStream(sc.getUploadSocket().getInputStream());
@@ -790,7 +794,7 @@ class Manager extends Thread {
                             }
                             if (RSdout[i] == null) {
                                 synchronized (synchronizer) {
-                                    RSdout[i] = new DataOutputStream(so[i].getSocket().getOutputStream());
+                                    RSdout[i] = new DataOutputStream(so[i].getChatSocket().getOutputStream());
                                 }
 
                             }
@@ -801,8 +805,12 @@ class Manager extends Thread {
                         System.out.println("end of list");
                         dout.writeUTF(aes.encrypt("end of list"));
                         dout.flush();
-                    } } else {
-                    synchronized (synchronizer) {
+                    }
+                } else {
+                    chatter chat = new chatter(curr_RSdout, sc, RSdout);
+                    chat.start();
+                    chat = null;
+                   /* synchronized (synchronizer) {
                         data = str.split(" ");
                         if (data[0].equals("%chat%")) {
                             chatid = Integer.parseInt(data[1]);
@@ -818,7 +826,7 @@ class Manager extends Thread {
                                 curr_RSdout.writeUTF(aes.encrypt((sc.getid() + " " + str)));
                             curr_RSdout.flush();
                         }
-                    }
+                    }*/
                 }
                 System.gc();
             }
@@ -829,7 +837,8 @@ class Manager extends Thread {
         }
     }
 }
-class Connector extends Thread{
+
+class Connector extends Thread {
     private final ServerSocket ss;
     private final CustomSocket[] so;
     private final File passfile = new File(System.getProperty("user.home").replace('\\', '/') + "/Desktop/uspass.txt");
@@ -847,18 +856,18 @@ class Connector extends Thread{
         String[] userdata;
         DataOutputStream dout;
         DataInputStream din;
-        Scanner filereader ;
-        int i ;
+        Scanner filereader;
+        int i;
         int j;
         numberofsockets[0] = 0;
         int n = so.length;
 
         int flag = 1;
-        String str,newusername,newpassword;
+        String str, newusername, newpassword;
         String[] onlineusers = new String[10];
         Decryptor dec = new Decryptor();
         Encryptor enc = new Encryptor();
-        while(true) {
+        while (true) {
 
             try {
                 testsocket = ss.accept();
@@ -899,6 +908,7 @@ class Connector extends Thread{
                     PublicKey publickey = keyFactory.generatePublic(publicKeySpec);
                     dout.writeUTF(rsaobj.encrypt(aes.encryptionKey, publickey));
                     dout.flush();
+                    System.out.println(aes.encryptionKey);
                     System.out.println("sent aes key\n");
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -948,9 +958,9 @@ class Connector extends Thread{
                         data = filereader.nextLine();
                         data = dec.decrypt(data);
                         filedata = data.split(" ");
-                        if (filedata[0].equals(userdata[0]) && filedata[1].equals(userdata[1]) ) {
+                        if (filedata[0].equals(userdata[0]) && filedata[1].equals(userdata[1])) {
                             flag = 1;
-                            for(j=0; j<numberofsockets[0] ; j++) {
+                            for (j = 0; j < numberofsockets[0]; j++) {
                                 if (filedata[0].equals(onlineusers[j])) {
                                     dout.writeUTF(aes.encrypt("User already logged in"));
                                     dout.flush();
@@ -960,7 +970,7 @@ class Connector extends Thread{
                             }
                             break;
                         } else {
-                            flag =0;
+                            flag = 0;
                         }
                     }
                     filereader.close();
@@ -970,7 +980,7 @@ class Connector extends Thread{
                             onlineusers[numberofsockets[0] - 1] = filedata[0];
                         }
                         so[i].setUsername(filedata[0]);
-                        Manager res = new Manager(so[i], i, so, numberofsockets,onlineusers);
+                        Manager res = new Manager(so[i], i, so, numberofsockets, onlineusers);
                         dout.writeUTF(aes.encrypt("ok"));
 
                         res.start();
@@ -1080,6 +1090,132 @@ class AsyncUploader extends Thread {
 }
 
 
+//TEST ZONE
+
+class chatter extends Thread {
+    private final DataOutputStream cdout;
+    private final DataInputStream cdin;
+    private final CustomSocket sc;
+    private final DataOutputStream[] rsdout;
+    private DataOutputStream currchatdout;
+
+    chatter(DataOutputStream currdout, CustomSocket socket, DataOutputStream[] rsdout) throws IOException {
+        this.currchatdout = currdout;
+        this.sc = socket;
+        Socket cs = sc.getChatSocket();
+
+        this.cdin = new DataInputStream(cs.getInputStream());
+        this.cdout = new DataOutputStream(cs.getOutputStream());
+        this.rsdout = rsdout;
+    }
+
+    public void run() {
+        try {
+            String str;
+            while (true) {
+
+                str = aes.decrypt(cdin.readUTF());
+                System.out.println(str);
+                synchronized (synchronizer) {
+                    String[] data = str.split(" ");
+                    if (data[0].equals("%chat%")) {
+                        int chatid = Integer.parseInt(data[1]);
+                        currchatdout = rsdout[chatid];
+                    } else if (data[0].equals("%others%")) {
+                        data = str.split("%others% ");
+                        cdout.writeUTF(aes.encrypt(data[1]));
+                        cdout.flush();
+                    } else {
+                    /*if (encryptflag == 1)
+                        currchatdout.writeUTF(aes.encrypt((sc.getid() + " " + en.encrypt(str))));
+                    else*/
+                        currchatdout.writeUTF(aes.encrypt((sc.getid() + " " + str)));
+                        currchatdout.flush();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+
+class AES256 {
+    public static final int AES_KEY_SIZE = 256;
+    public static final int GCM_IV_LENGTH = 16;
+    public static final int GCM_TAG_LENGTH = 16;
+    static String plainText = "This is a plain text which need to be encrypted by Java AES 256 GCM Encryption Algorithm";
+    String decryptedText;
+
+    public AES256() throws Exception {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(AES_KEY_SIZE);
+
+        // Generate Key
+        SecretKey key = keyGenerator.generateKey();
+        byte[] IV = new byte[GCM_IV_LENGTH];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(IV);
+        System.out.println(Base64.getEncoder().withoutPadding().encodeToString(IV));
+        System.out.println("Original Text : " + plainText);
+
+        byte[] cipherText = encrypt(plainText.getBytes(), key, IV);
+        System.out.println("Encrypted Text : " + Base64.getEncoder().encodeToString(cipherText));
+
+        decryptedText = decrypt(cipherText, key);
+        System.out.println("DeCrypted Text : " + decryptedText);
+    }
+
+    public static byte[] encrypt(byte[] plaintext, SecretKey key, byte[] IV) throws Exception {
+        // Get Cipher Instance
+        System.out.println("plaintext " + plaintext.length);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+
+        // Create SecretKeySpec
+        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "AES");
+
+        // Create GCMParameterSpec
+        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+
+        // Initialize Cipher for ENCRYPT_MODE
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
+
+        // Perform Encryption
+        byte[] CipherText = cipher.doFinal(plaintext);
+        byte[] CipherTextFinal = new byte[GCM_IV_LENGTH + CipherText.length];
+        System.arraycopy(IV, 0, CipherTextFinal, 0, GCM_TAG_LENGTH);
+        System.arraycopy(CipherText, 0, CipherTextFinal, GCM_IV_LENGTH, CipherText.length);
+        System.out.println(CipherTextFinal.length);
+        return CipherTextFinal;
+    }
+
+    public static String decrypt(byte[] cipherText, SecretKey key) throws Exception {
+        // Get Cipher Instance
+        System.out.println(cipherText.length);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        byte[] IV = new byte[GCM_IV_LENGTH];
+        System.arraycopy(cipherText, 0, IV, 0, GCM_IV_LENGTH);
+        System.out.println(Base64.getEncoder().withoutPadding().encodeToString(IV));
+        byte[] ciphertextonly = new byte[cipherText.length - GCM_IV_LENGTH];
+        System.arraycopy(cipherText, GCM_IV_LENGTH, ciphertextonly, 0, cipherText.length - GCM_IV_LENGTH);
+        // Create SecretKeySpec
+        System.out.println(Base64.getEncoder().encodeToString(ciphertextonly));
+        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "AES");
+
+        // Create GCMParameterSpec
+        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+
+        // Initialize Cipher for DECRYPT_MODE
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmParameterSpec);
+
+        // Perform Decryption
+        byte[] decryptedText = cipher.doFinal(ciphertextonly);
+
+        return new String(decryptedText);
+    }
+}
+
 class MyServer {
     public final static Sync synchronizer = new Sync();
     public final static Sync filesynchronizer = new Sync();
@@ -1096,6 +1232,16 @@ class MyServer {
         try {
             aes = new AES();
         } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public final static AES256 aes256;
+
+    static {
+        try {
+            aes256 = new AES256();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -1122,17 +1268,18 @@ class MyServer {
         System.out.println("Server has started");
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
 
-        File[] contents = NASSource.listFiles();
+       /* File[] contents = NASSource.listFiles();
         assert contents != null;
         for (File f : contents) {
             System.out.println(f.getName());
         }
-        contents = null;
+        contents = null;*/
         System.gc();
         Connector con = new Connector(ss, so);
         con.start();
-       /* AsyncUploader async = new AsyncUploader();
-        async.start();*/
+        //AsyncUploader async = new AsyncUploader();
+        //async.start();
+
         Scanner in = new Scanner(System.in);
         while (!exitstr.equals("exit")) {
             exitstr = in.nextLine();
