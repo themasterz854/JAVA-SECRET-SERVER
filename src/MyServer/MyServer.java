@@ -271,7 +271,7 @@ class rsa {
         }
     }
 
-    public String encrypt(String message, PublicKey publicKey) {
+    public String encrypt(String message, Key publicKey) {
         Cipher encryptCipher;
         try {
             encryptCipher = Cipher.getInstance("RSA");
@@ -279,7 +279,7 @@ class rsa {
             byte[] secretMessageBytes = message.getBytes(StandardCharsets.UTF_8);
             byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
             String encodedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
-            System.out.println(encodedMessage);
+            // System.out.println(encodedMessage);
             return encodedMessage;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
                  InvalidKeyException e) {
@@ -288,7 +288,22 @@ class rsa {
 
     }
 
-    public String decrypt(String encryptedmessage, PrivateKey privateKey) {
+    public byte[] encrypt(byte[] secretMessageBytes, Key publicKey) {
+        Cipher encryptCipher;
+        try {
+            encryptCipher = Cipher.getInstance("RSA");
+            encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
+            // System.out.println(encodedMessage);
+            return Base64.getEncoder().encode(encryptedMessageBytes);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public String decrypt(String encryptedmessage, Key privateKey) {
         Cipher decryptCipher;
         String decryptedMessage;
         byte[] encryptedMessageBytes = Base64.getDecoder().decode(encryptedmessage);
@@ -304,6 +319,22 @@ class rsa {
         }
 
         return decryptedMessage;
+    }
+
+    public byte[] decrypt(byte[] MessageBytes, Key privateKey) {
+        Cipher decryptCipher;
+        byte[] decryptedMessageBytes;
+        byte[] encryptedMessageBytes = Base64.getDecoder().decode(MessageBytes);
+        try {
+            decryptCipher = Cipher.getInstance("RSA");
+            decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+            decryptedMessageBytes = decryptCipher.doFinal(encryptedMessageBytes);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+
+        return decryptedMessageBytes;
     }
 
 }
@@ -624,6 +655,7 @@ class Manager extends Thread {
         this.onlineusers = onlineusers;
     }
 
+
     public void run() {
         try {
             int i;
@@ -850,6 +882,58 @@ class Connector extends Thread {
         this.so = so;
     }
 
+    public void digitalsignature(CustomSocket sc, Key clientpublickey) throws Exception {
+        //TEST AREA
+        DataInputStream din = new DataInputStream(sc.getSocket().getInputStream());
+        DataOutputStream dout = new DataOutputStream(sc.getSocket().getOutputStream());
+        System.out.println("AES key is " + aes.encryptionKey);
+        MessageDigest keyhash = MessageDigest.getInstance("SHA-256");
+        keyhash.update(aes.encryptionKey.getBytes());
+        byte[] digest = keyhash.digest();
+        StringBuilder hashsource = new StringBuilder();
+        for (byte x : digest) {
+            hashsource.append(String.format("%02x", x));
+        }
+        System.out.println("HASH IS " + hashsource);
+        String privatestring = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey);
+        System.out.println(new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
+        byte[] privateencryptedhashbytes = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey).getBytes(StandardCharsets.UTF_8);
+        int length = privateencryptedhashbytes.length;
+        int acceptablelength = 245;
+
+        int i1 = length % acceptablelength == 0 ? length / acceptablelength : (length / acceptablelength) + 1;
+        byte[][] privateencryptedhashbytesarray = new byte[i1][acceptablelength];
+        byte[][] publicencryptedbytesarray = new byte[i1][];
+        int i, j = 0;
+        for (i = 0; i < privateencryptedhashbytes.length; i += acceptablelength) {
+
+            System.arraycopy(privateencryptedhashbytes, i, privateencryptedhashbytesarray[j], 0, Math.min(acceptablelength, privateencryptedhashbytes.length - i));
+            j++;
+        }
+        byte[] temp = new byte[acceptablelength - (i - privateencryptedhashbytes.length)];
+        System.arraycopy(privateencryptedhashbytesarray[j - 1], 0, temp, 0, acceptablelength - (i - privateencryptedhashbytes.length));
+        privateencryptedhashbytesarray[j - 1] = temp;
+
+        int numberofhash = j;
+        dout.writeUTF(rsaobj.encrypt(String.valueOf(numberofhash), clientpublickey));
+        dout.flush();
+        StringBuilder hash;
+        for (i = 0; i < numberofhash; i++) {
+            hash = new StringBuilder();
+            publicencryptedbytesarray[i] = rsaobj.encrypt(privateencryptedhashbytesarray[i], clientpublickey);
+            for (byte x : publicencryptedbytesarray[i]) {
+                hash.append(String.format("%02x", x));
+            }
+            System.out.println(hash);
+            dout.writeInt(publicencryptedbytesarray[i].length);
+            dout.flush();
+            din.readUTF();
+            dout.write(publicencryptedbytesarray[i], 0, publicencryptedbytesarray[i].length);
+            dout.flush();
+            din.readUTF();
+        }
+    }
+
     public void run() {
         Socket testsocket;
         String data;
@@ -905,15 +989,17 @@ class Connector extends Thread {
                 System.out.println("received public key\n");
                 try {
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                    PublicKey publickey = keyFactory.generatePublic(publicKeySpec);
-                    dout.writeUTF(rsaobj.encrypt(aes.encryptionKey, publickey));
+                    PublicKey clientpublickey = keyFactory.generatePublic(publicKeySpec);
+                    dout.writeUTF(rsaobj.encrypt(aes.encryptionKey, clientpublickey));
                     dout.flush();
-                    System.out.println(aes.encryptionKey);
                     System.out.println("sent aes key\n");
+                    digitalsignature(so[i], clientpublickey);
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.exit(-1);
                 } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    throw new RuntimeException(e);
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
                 str = aes.decrypt(din.readUTF());
@@ -1221,10 +1307,10 @@ class MyServer {
     public final static Sync filesynchronizer = new Sync();
     public final static AES aes;
     public final static rsa rsaobj = new rsa();
+    public final static AES256 aes256;
     public static File NASSource = new File("E:/");
     public static File NASBunker = new File("F:/");
     public static File NASTarget = new File("H:/");
-
     public static int FileBufferSize = 1024 * 1024 * 75;
     public static boolean SourceDown = false, BunkerDown = false, TargetDown = false;
 
@@ -1235,8 +1321,6 @@ class MyServer {
             throw new RuntimeException(e);
         }
     }
-
-    public final static AES256 aes256;
 
     static {
         try {
@@ -1278,7 +1362,54 @@ class MyServer {
         Connector con = new Connector(ss, so);
         con.start();
         //AsyncUploader async = new AsyncUploader();
-        //async.start();
+        //async.start();\
+        //TEST AREA
+        System.out.println("AES key is " + aes.encryptionKey);
+        MessageDigest keyhash = MessageDigest.getInstance("SHA-256");
+        keyhash.update(aes.encryptionKey.getBytes());
+        byte[] digest = keyhash.digest();
+        StringBuilder hashsource = new StringBuilder();
+        for (byte x : digest) {
+            hashsource.append(String.format("%02x", x));
+        }
+        System.out.println("HASH IS " + hashsource);
+        String privatestring = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey);
+        System.out.println(new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
+        byte[] privateencryptedhashbytes = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey).getBytes(StandardCharsets.UTF_8);
+        int length = privateencryptedhashbytes.length;
+        int acceptablelength = 245;
+
+        int i1 = length % acceptablelength == 0 ? length / acceptablelength : (length / acceptablelength) + 1;
+        byte[][] privateencryptedhashbytesarray = new byte[i1][acceptablelength];
+        byte[][] publicencryptedbytesarray = new byte[i1][];
+        int j = 0;
+        for (i = 0; i < privateencryptedhashbytes.length; i += acceptablelength) {
+
+            System.arraycopy(privateencryptedhashbytes, i, privateencryptedhashbytesarray[j], 0, Math.min(acceptablelength, privateencryptedhashbytes.length - i));
+            j++;
+        }
+        byte[] temp = new byte[acceptablelength - (i - privateencryptedhashbytes.length)];
+        System.arraycopy(privateencryptedhashbytesarray[j - 1], 0, temp, 0, acceptablelength - (i - privateencryptedhashbytes.length));
+        privateencryptedhashbytesarray[j - 1] = temp;
+
+        int numberofhash = j;
+        for (i = 0; i < numberofhash; i++) {
+            publicencryptedbytesarray[i] = rsaobj.encrypt(privateencryptedhashbytesarray[i], rsaobj.publicKey);
+        }
+        //to be done by client
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        for (i = 0; i < numberofhash; i++) {
+            outputStream.write(rsaobj.decrypt(publicencryptedbytesarray[i], rsaobj.privateKey));
+        }
+        byte[] c = outputStream.toByteArray();
+
+
+        String nope = new String(c, StandardCharsets.UTF_8);
+        nope = rsaobj.decrypt(nope, rsaobj.publicKey);
+        System.out.println(nope);
+        byte[] hashfinal = rsaobj.decrypt(c, rsaobj.publicKey);
+        System.out.println(new String(hashfinal, StandardCharsets.UTF_8));
+
 
         Scanner in = new Scanner(System.in);
         while (!exitstr.equals("exit")) {
