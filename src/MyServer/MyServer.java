@@ -1,13 +1,18 @@
 package MyServer;
 
+import org.w3c.dom.ls.LSOutput;
+
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.EncodedKeySpec;
@@ -167,8 +172,9 @@ class NASUploader extends Thread {
                     UploadDout.writeUTF(aes.encrypt("READ filessize"));
                     UploadDout.flush();
                     String filename = aes.decrypt(UploadDin.readUTF());
-                    File f = new File(NASSource + filename);
-                    File g = new File(NASBunker + filename);
+
+                    File f = new File(NASSource + "/" + filename);
+                    File g = new File(NASBunker + "/" + filename);
                     FileOutputStream fos = new FileOutputStream(f);
                     FileOutputStream gos = new FileOutputStream(g);
 
@@ -740,7 +746,7 @@ class Manager extends Thread {
                             NASfilelist = new StringBuilder();
                             assert contents != null;
                             for (File f : contents) {
-                                if (f.getName().equals("System Volume Information")) {
+                                if (f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
                                     continue;
                                 }
                                 NASfilelist.append(f.getName()).append("\n");
@@ -1108,7 +1114,7 @@ class AsyncUploader extends Thread {
                     assert sourcecontents != null;
                     for (File f : sourcecontents) {
 
-                        if (!f.exists() || f.getName().equals("System Volume Information")) {
+                        if (!f.exists() || f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
                             continue;
                         }
                         FileInputStream fis = new FileInputStream(f.getAbsolutePath());
@@ -1152,7 +1158,7 @@ class AsyncUploader extends Thread {
 
                     assert targetcontents != null;
                     for (File f : targetcontents) {
-                        if (f.getName().equals("System Volume Information")) {
+                        if (f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
                             continue;
                         }
                         file = new File(NASSource + "/" + f.getName());
@@ -1308,9 +1314,9 @@ class MyServer {
     public final static AES aes;
     public final static rsa rsaobj = new rsa();
     public final static AES256 aes256;
-    public static File NASSource = new File("E:/");
-    public static File NASBunker = new File("F:/");
-    public static File NASTarget = new File("H:/");
+    public static File NASSource = new File("/run/media/" + System.getProperty("user.name") + "/Source/");
+    public static File NASBunker = new File("/run/media/" + System.getProperty("user.name") + "/Bunker/");
+    public static File NASTarget = new File("/run/media/" + System.getProperty("user.name") + "/Target/");
     public static int FileBufferSize = 1024 * 1024 * 75;
     public static boolean SourceDown = false, BunkerDown = false, TargetDown = false;
 
@@ -1352,63 +1358,17 @@ class MyServer {
         System.out.println("Server has started");
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
 
-       /* File[] contents = NASSource.listFiles();
+        File[] contents = NASSource.listFiles();
         assert contents != null;
         for (File f : contents) {
             System.out.println(f.getName());
         }
-        contents = null;*/
+        contents = null;
         System.gc();
         Connector con = new Connector(ss, so);
         con.start();
-        //AsyncUploader async = new AsyncUploader();
-        //async.start();\
-        //TEST AREA
-        System.out.println("AES key is " + aes.encryptionKey);
-        MessageDigest keyhash = MessageDigest.getInstance("SHA-256");
-        keyhash.update(aes.encryptionKey.getBytes());
-        byte[] digest = keyhash.digest();
-        StringBuilder hashsource = new StringBuilder();
-        for (byte x : digest) {
-            hashsource.append(String.format("%02x", x));
-        }
-        System.out.println("HASH IS " + hashsource);
-        String privatestring = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey);
-        System.out.println(new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
-        byte[] privateencryptedhashbytes = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey).getBytes(StandardCharsets.UTF_8);
-        int length = privateencryptedhashbytes.length;
-        int acceptablelength = 245;
-
-        int i1 = length % acceptablelength == 0 ? length / acceptablelength : (length / acceptablelength) + 1;
-        byte[][] privateencryptedhashbytesarray = new byte[i1][acceptablelength];
-        byte[][] publicencryptedbytesarray = new byte[i1][];
-        int j = 0;
-        for (i = 0; i < privateencryptedhashbytes.length; i += acceptablelength) {
-
-            System.arraycopy(privateencryptedhashbytes, i, privateencryptedhashbytesarray[j], 0, Math.min(acceptablelength, privateencryptedhashbytes.length - i));
-            j++;
-        }
-        byte[] temp = new byte[acceptablelength - (i - privateencryptedhashbytes.length)];
-        System.arraycopy(privateencryptedhashbytesarray[j - 1], 0, temp, 0, acceptablelength - (i - privateencryptedhashbytes.length));
-        privateencryptedhashbytesarray[j - 1] = temp;
-
-        int numberofhash = j;
-        for (i = 0; i < numberofhash; i++) {
-            publicencryptedbytesarray[i] = rsaobj.encrypt(privateencryptedhashbytesarray[i], rsaobj.publicKey);
-        }
-        //to be done by client
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        for (i = 0; i < numberofhash; i++) {
-            outputStream.write(rsaobj.decrypt(publicencryptedbytesarray[i], rsaobj.privateKey));
-        }
-        byte[] c = outputStream.toByteArray();
-
-
-        String nope = new String(c, StandardCharsets.UTF_8);
-        nope = rsaobj.decrypt(nope, rsaobj.publicKey);
-        System.out.println(nope);
-        byte[] hashfinal = rsaobj.decrypt(c, rsaobj.publicKey);
-        System.out.println(new String(hashfinal, StandardCharsets.UTF_8));
+        AsyncUploader async = new AsyncUploader();
+        async.start();
 
 
         Scanner in = new Scanner(System.in);

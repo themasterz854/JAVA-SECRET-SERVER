@@ -9,7 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="basic implementation of digital signature done">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" afterDir="false" />
@@ -74,10 +75,10 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;local&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/zaid/IdeaProjects/JAVA-SECRET-SERVER&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.appearance&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.JavaFX&quot;
   }
 }</component>
   <component name="RunManager">
@@ -327,7 +328,15 @@
       <option name="project" value="LOCAL" />
       <updated>1695911234019</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="basic implementation of digital signature done">
+      <option name="closed" value="true" />
+      <created>1695974597913</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1695974597914</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -370,7 +379,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="finalized the project" />
     <MESSAGE value="privatisation of server &#10;now finalized :)" />
     <MESSAGE value="added sha256 hashing for file" />
     <MESSAGE value="added AES and code cleanup" />
@@ -395,7 +403,8 @@
     <MESSAGE value="testing of multisocket connection done on NASUpload , gotta implement for all services" />
     <MESSAGE value="multisocket done for NAS upload and download" />
     <MESSAGE value="multisocket done for chat, need to add encryption toggle" />
-    <option name="LAST_COMMIT_MESSAGE" value="multisocket done for chat, need to add encryption toggle" />
+    <MESSAGE value="basic implementation of digital signature done" />
+    <option name="LAST_COMMIT_MESSAGE" value="basic implementation of digital signature done" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -413,5 +422,9 @@
         </breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
