@@ -9,8 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="basic implementation of digital signature done">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" afterDir="false" />
@@ -81,7 +81,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.JavaFX&quot;
   }
 }</component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.MyServer">
     <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
       <module name="JAVA-SECRET-SERVER" />
@@ -95,6 +95,18 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="MyServerNAS" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
+      <module name="JAVA-SECRET-SERVER" />
+      <option name="PROGRAM_PARAMETERS" value="4949 NAS" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.MyServer" />
+      <item itemvalue="Application.MyServerNAS" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Application.MyServer" />
@@ -336,7 +348,15 @@
       <option name="project" value="LOCAL" />
       <updated>1695974597914</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="fixed new account creation">
+      <option name="closed" value="true" />
+      <created>1697955807781</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1697955807781</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -384,7 +404,6 @@
     <MESSAGE value="added AES and code cleanup" />
     <MESSAGE value="patch test" />
     <MESSAGE value="added AES and code cleanup" />
-    <MESSAGE value="fixed new account creation" />
     <MESSAGE value="properly fixed new account creation" />
     <MESSAGE value="added AES support for all communication &#10;need to add AES support for files" />
     <MESSAGE value="public key exchange successful" />
@@ -404,8 +423,8 @@
     <MESSAGE value="multisocket done for NAS upload and download" />
     <MESSAGE value="multisocket done for chat, need to add encryption toggle" />
     <MESSAGE value="basic implementation of digital signature done" />
-    <option name="LAST_COMMIT_MESSAGE" value="basic implementation of digital signature done" />
-    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="fixed new account creation" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed new account creation" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>

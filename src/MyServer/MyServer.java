@@ -1,18 +1,13 @@
 package MyServer;
 
-import org.w3c.dom.ls.LSOutput;
-
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.swing.filechooser.FileSystemView;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileStore;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.EncodedKeySpec;
@@ -137,12 +132,12 @@ class NASReceiverDeleter extends Thread {
                             f = new File(NASBunker + "/" + f.getName());
                             f.delete();
                         }
-                        DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName()));
+                        DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName() + "\n"));
                         DownloadDout.flush();
                     }
                     f = null;
                 }
-                DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED"));
+                DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED \n"));
                 DownloadDout.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -984,7 +979,7 @@ class Connector extends Thread {
                 dout.writeInt(publicKeyBytes.length);
                 dout.flush();
                 dout.write(publicKeyBytes);
-                System.out.println("sent public key\n");
+                System.out.println("sent the public key\n");
                 dout.flush();
 
                 int keylength;
@@ -992,7 +987,7 @@ class Connector extends Thread {
                 byte[] publickeyBytes = new byte[keylength];
                 din.read(publickeyBytes, 0, keylength);
                 EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
-                System.out.println("received public key\n");
+                System.out.println("received client public key\n");
                 try {
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                     PublicKey clientpublickey = keyFactory.generatePublic(publicKeySpec);
@@ -1000,11 +995,11 @@ class Connector extends Thread {
                     dout.flush();
                     System.out.println("sent aes key\n");
                     digitalsignature(so[i], clientpublickey);
+                    dout.writeUTF(aes.encrypt(NAS_Status));
+                    dout.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.exit(-1);
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new RuntimeException(e);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -1148,7 +1143,7 @@ class AsyncUploader extends Thread {
                             }
                         }
                         fis.close();
-                        if (!hashsource.toString().equals(hashtarget.toString())) {
+                        if (!hashsource.toString().contentEquals(hashtarget)) {
                             System.out.println("Hashes not matching " + f.getName());
                             file.delete();
                             Files.copy(f.toPath(), file.toPath());
@@ -1309,6 +1304,7 @@ class AES256 {
 }
 
 class MyServer {
+    public static String NAS_Status;
     public final static Sync synchronizer = new Sync();
     public final static Sync filesynchronizer = new Sync();
     public final static AES aes;
@@ -1338,12 +1334,6 @@ class MyServer {
 
     public static void main(String[] args) throws Exception {
 
-        if (!NASSource.exists()) {
-            SourceDown = true;
-            NASSource = NASBunker;
-            System.out.println("Source down, switching to Bunker");
-        }
-
         CustomSocket[] so = new CustomSocket[10];
         String exitstr = "start";
         rsaobj.getPublickey();
@@ -1354,21 +1344,31 @@ class MyServer {
             so[i] = new CustomSocket();
         }
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0]));
-        System.out.println(args[0]);
-        System.out.println("Server has started");
+        System.out.println("Server has started on port " + args[0]);
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
-
-        File[] contents = NASSource.listFiles();
-        assert contents != null;
-        for (File f : contents) {
-            System.out.println(f.getName());
+        if (!NASSource.exists()) {
+            SourceDown = true;
+            NASSource = NASBunker;
+            System.out.println("Source down, switching to Bunker");
         }
-        contents = null;
-        System.gc();
+
+        if (args.length > 1 && args[1].equals("NAS")) {
+            NAS_Status = "%NAS_ONLINE%";
+            File[] contents = NASSource.listFiles();
+            assert contents != null;
+            for (File f : contents) {
+                System.out.println(f.getName());
+            }
+            contents = null;
+            AsyncUploader async = new AsyncUploader();
+            async.start();
+            System.out.println("Starting NAS server");
+            System.gc();
+        } else {
+            NAS_Status = "%NAS_OFFLINE%";
+        }
         Connector con = new Connector(ss, so);
         con.start();
-        AsyncUploader async = new AsyncUploader();
-        async.start();
 
 
         Scanner in = new Scanner(System.in);
