@@ -1310,9 +1310,10 @@ class MyServer {
     public final static AES aes;
     public final static rsa rsaobj = new rsa();
     public final static AES256 aes256;
-    public static File NASSource = new File("/run/media/" + System.getProperty("user.name") + "/Source/");
-    public static File NASBunker = new File("/run/media/" + System.getProperty("user.name") + "/Bunker/");
-    public static File NASTarget = new File("/run/media/" + System.getProperty("user.name") + "/Target/");
+
+    public static File NASSource;
+    public static File NASBunker;
+    public static File NASTarget;
     public static int FileBufferSize = 1024 * 1024 * 75;
     public static boolean SourceDown = false, BunkerDown = false, TargetDown = false;
 
@@ -1346,13 +1347,14 @@ class MyServer {
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0]));
         System.out.println("Server has started on port " + args[0]);
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
-        if (!NASSource.exists()) {
-            SourceDown = true;
-            NASSource = NASBunker;
-            System.out.println("Source down, switching to Bunker");
-        }
+
 
         if (args.length > 1 && args[1].equals("NAS")) {
+            System.out.println(args[2] + " " + args[3] + " " + args[4]);
+            NASSource = new File(args[2]);
+
+            NASBunker = new File(args[3]);
+            NASTarget = new File(args[4]);
             NAS_Status = "%NAS_ONLINE%";
             File[] contents = NASSource.listFiles();
             assert contents != null;
@@ -1363,6 +1365,11 @@ class MyServer {
             AsyncUploader async = new AsyncUploader();
             async.start();
             System.out.println("Starting NAS server");
+            if (!NASSource.exists()) {
+                SourceDown = true;
+                NASSource = NASBunker;
+                System.out.println("Source down, switching to Bunker");
+            }
             System.gc();
         } else {
             NAS_Status = "%NAS_OFFLINE%";

@@ -10,23 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/MyServer.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MyServer/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,19 +55,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;local&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/zaid/IdeaProjects/JAVA-SECRET-SERVER&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.JavaFX&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "local",
+    "last_opened_file_path": "/home/zaid/IdeaProjects/JAVA-SECRET-SERVER",
+    "project.structure.last.edited": "Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.JavaFX"
   }
-}</component>
-  <component name="RunManager" selected="Application.MyServer">
+}]]></component>
+  <component name="RunManager" selected="Application.MyServerNAS">
     <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
       <module name="JAVA-SECRET-SERVER" />
@@ -98,7 +85,7 @@
     <configuration name="MyServerNAS" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
       <module name="JAVA-SECRET-SERVER" />
-      <option name="PROGRAM_PARAMETERS" value="4949 NAS" />
+      <option name="PROGRAM_PARAMETERS" value="4949 NAS /run/media/zaid/Source/ /run/media/zaid/Bunker/ /run/media/zaid/Target/" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -356,7 +343,15 @@
       <option name="project" value="LOCAL" />
       <updated>1697955807781</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="added NAS_STATUS and default credentials">
+      <option name="closed" value="true" />
+      <created>1698935633490</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1698935633490</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -399,7 +394,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="privatisation of server &#10;now finalized :)" />
     <MESSAGE value="added sha256 hashing for file" />
     <MESSAGE value="added AES and code cleanup" />
     <MESSAGE value="patch test" />
@@ -424,7 +418,8 @@
     <MESSAGE value="multisocket done for chat, need to add encryption toggle" />
     <MESSAGE value="basic implementation of digital signature done" />
     <MESSAGE value="fixed new account creation" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed new account creation" />
+    <MESSAGE value="added NAS_STATUS and default credentials" />
+    <option name="LAST_COMMIT_MESSAGE" value="added NAS_STATUS and default credentials" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
