@@ -1098,7 +1098,7 @@ class AsyncUploader extends Thread {
         File[] targetcontents;
         File file;
 
-        StringBuilder hashsource = new StringBuilder(), hashtarget = new StringBuilder();
+        StringBuilder hashsource, hashtarget;
         while (true) {
             try {
                 Thread.sleep(1000 * 10);
@@ -1113,16 +1113,15 @@ class AsyncUploader extends Thread {
                             continue;
                         }
                         FileInputStream fis = new FileInputStream(f.getAbsolutePath());
-                        byte[] FileData = new byte[(int) f.length()];
+                        byte[] FileData = new byte[512 * 1024 * 1024];
                         MessageDigest md1 = MessageDigest.getInstance("SHA-256");
-                        if (fis.read(FileData) != -1) {
-
+                        hashsource = new StringBuilder();
+                        while (fis.read(FileData) != -1) {
                             md1.update(FileData);
-                            byte[] digest = md1.digest();
-                            hashsource = new StringBuilder();
-                            for (byte x : digest) {
-                                hashsource.append(String.format("%02x", x));
-                            }
+                        }
+                        byte[] digest = md1.digest();
+                        for (byte x : digest) {
+                            hashsource.append(String.format("%02x", x));
                         }
                         fis.close();
                         file = new File(NASTarget + "/" + f.getName());
@@ -1131,16 +1130,17 @@ class AsyncUploader extends Thread {
                             Files.copy(f.toPath(), file.toPath());
                             System.out.println("Copying new file " + f.getName());
                         }
-                        FileData = new byte[(int) file.length()];
+                        FileData = new byte[512 * 1024 * 1024];
                         md1 = MessageDigest.getInstance("SHA-256");
                         fis = new FileInputStream(file.getAbsolutePath());
-                        if (fis.read(FileData) != -1) {
+                        hashtarget = new StringBuilder();
+                        while (fis.read(FileData) != -1) {
                             md1.update(FileData);
-                            byte[] digest = md1.digest();
-                            hashtarget = new StringBuilder();
-                            for (byte x : digest) {
-                                hashtarget.append(String.format("%02x", x));
-                            }
+
+                        }
+                        digest = md1.digest();
+                        for (byte x : digest) {
+                            hashtarget.append(String.format("%02x", x));
                         }
                         fis.close();
                         if (!hashsource.toString().contentEquals(hashtarget)) {
@@ -1314,7 +1314,7 @@ class MyServer {
     public static File NASSource;
     public static File NASBunker;
     public static File NASTarget;
-    public static int FileBufferSize = 1024 * 1024 * 75;
+    public static int FileBufferSize = 1024 * 1024 * 375;
     public static boolean SourceDown = false, BunkerDown = false, TargetDown = false;
 
     static {

@@ -12,7 +12,6 @@
     <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MyServer/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,19 +54,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "local",
-    "last_opened_file_path": "/home/zaid/IdeaProjects/JAVA-SECRET-SERVER",
-    "project.structure.last.edited": "Libraries",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.JavaFX"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;local&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/zaid/IdeaProjects/JAVA-SECRET-SERVER&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.JavaFX&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Application.MyServerNAS">
     <configuration name="MyServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
@@ -85,7 +84,7 @@
     <configuration name="MyServerNAS" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="MyServer.MyServer" />
       <module name="JAVA-SECRET-SERVER" />
-      <option name="PROGRAM_PARAMETERS" value="4949 NAS /run/media/zaid/Source/ /run/media/zaid/Bunker/ /run/media/zaid/Target/" />
+      <option name="PROGRAM_PARAMETERS" value="4949 NAS /mnt/Source/ /mnt/Bunker/ /mnt/Target/" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -351,7 +350,15 @@
       <option name="project" value="LOCAL" />
       <updated>1698935633490</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="added ability to add custom NAS locations as arguments to the program">
+      <option name="closed" value="true" />
+      <created>1699036338460</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1699036338460</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -394,7 +401,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added sha256 hashing for file" />
     <MESSAGE value="added AES and code cleanup" />
     <MESSAGE value="patch test" />
     <MESSAGE value="added AES and code cleanup" />
@@ -419,7 +425,8 @@
     <MESSAGE value="basic implementation of digital signature done" />
     <MESSAGE value="fixed new account creation" />
     <MESSAGE value="added NAS_STATUS and default credentials" />
-    <option name="LAST_COMMIT_MESSAGE" value="added NAS_STATUS and default credentials" />
+    <MESSAGE value="added ability to add custom NAS locations as arguments to the program" />
+    <option name="LAST_COMMIT_MESSAGE" value="added ability to add custom NAS locations as arguments to the program" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
