@@ -9,12 +9,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -128,7 +130,7 @@ class NASReceiverDeleter extends Thread {
                     }
                     synchronized (filesynchronizer) {
                         f.delete();
-                        if (!SourceDown) {
+                        if (!(NASSource.equals(NASBunker))) {
                             f = new File(NASBunker + "/" + f.getName());
                             f.delete();
                         }
@@ -169,9 +171,14 @@ class NASUploader extends Thread {
                     String filename = aes.decrypt(UploadDin.readUTF());
 
                     File f = new File(NASSource + "/" + filename);
-                    File g = new File(NASBunker + "/" + filename);
+                    File g;
+                    FileOutputStream gos = null;
+                    if (!(NASSource.equals(NASBunker))) {
+                        g = new File(NASBunker + "/" + filename);
+                        gos = new FileOutputStream(g);
+                    }
                     FileOutputStream fos = new FileOutputStream(f);
-                    FileOutputStream gos = new FileOutputStream(g);
+
 
                     byte[] receivedData;
                     int received;
@@ -187,14 +194,19 @@ class NASUploader extends Thread {
                         receivedData = aes.decrypt(receivedData);
                         System.gc();
                         fos.write(receivedData);
-                        gos.write(receivedData);
+                        if (!(NASSource.equals(NASBunker))) {
+                            gos.write(receivedData);
+                        }
                         System.out.println("received partial bytes" + actualreceived);
                         UploadDout.writeUTF(aes.encrypt("ACK"));
                         UploadDout.flush();
                     }
                     System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
                     fos.close();
-                    gos.close();
+                    if (!(NASSource.equals(NASBunker))) {
+                        assert gos != null;
+                        gos.close();
+                    }
                     receivedData = null;
                     f = g = null;
                     fos = gos = null;
@@ -1113,7 +1125,7 @@ class AsyncUploader extends Thread {
                             continue;
                         }
                         FileInputStream fis = new FileInputStream(f.getAbsolutePath());
-                        byte[] FileData = new byte[512 * 1024 * 1024];
+                        byte[] FileData = new byte[f.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) f.length()];
                         MessageDigest md1 = MessageDigest.getInstance("SHA-256");
                         hashsource = new StringBuilder();
                         while (fis.read(FileData) != -1) {
@@ -1130,7 +1142,7 @@ class AsyncUploader extends Thread {
                             Files.copy(f.toPath(), file.toPath());
                             System.out.println("Copying new file " + f.getName());
                         }
-                        FileData = new byte[512 * 1024 * 1024];
+                        FileData = new byte[file.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) file.length()];
                         md1 = MessageDigest.getInstance("SHA-256");
                         fis = new FileInputStream(file.getAbsolutePath());
                         hashtarget = new StringBuilder();
@@ -1333,6 +1345,58 @@ class MyServer {
         }
     }
 
+    static boolean SearchMounts() throws FileNotFoundException {
+        boolean result = false;
+        Scanner scan = new Scanner(new File("/proc/mounts"));
+        while (scan.hasNext()) {
+            String line = scan.nextLine();
+            if (line.contains(NASSource.getAbsolutePath())) {
+                result = true;
+                break;
+            }
+        }
+        scan.close();
+        return result;
+    }
+
+    static void copyDirectoryCompatibityMode(File source, File destination) throws IOException {
+        if (source.isDirectory()) {
+            copyDirectory(source, destination);
+        } else {
+            Files.copy(source.toPath(), destination.toPath());
+        }
+    }
+
+    static void copyDirectory(File sourceDirectory, File destinationDirectory) throws IOException {
+        if (!destinationDirectory.exists()) {
+            destinationDirectory.mkdir();
+        }
+        for (String f : Objects.requireNonNull(sourceDirectory.list())) {
+            copyDirectoryCompatibityMode(new File(sourceDirectory, f), new File(destinationDirectory, f));
+        }
+    }
+
+    static void DisasterRecovery(File RecoverFrom) throws IOException {
+        System.out.println("RECOVER PROCESS INITIATED");
+        System.out.println("RECOVERING FROM " + RecoverFrom.getAbsolutePath());
+        System.out.println("Enter path of new Source");
+        Scanner in = new Scanner(System.in);
+        NASSource = new File(in.nextLine());
+        File[] contents = RecoverFrom.listFiles();
+
+        assert contents != null;
+        for (File f : contents) {
+            if (f.isDirectory()) {
+                copyDirectory(f.getAbsoluteFile(), new File(NASSource.getAbsolutePath() + "/" + f.getName()));
+            } else {
+                Files.copy(f.toPath(), Path.of(NASSource + "/" + f.getName()));
+            }
+            System.out.println(f.getName() + " RECOVERED");
+        }
+        contents = null;
+        System.out.println("SOURCE RECONSTRUCTED");
+    }
+
     public static void main(String[] args) throws Exception {
 
         CustomSocket[] so = new CustomSocket[10];
@@ -1348,7 +1412,7 @@ class MyServer {
         System.out.println("Server has started on port " + args[0]);
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
 
-
+        Scanner in = new Scanner(System.in);
         if (args.length > 1 && args[1].equals("NAS")) {
             System.out.println(args[2] + " " + args[3] + " " + args[4]);
             NASSource = new File(args[2]);
@@ -1356,29 +1420,42 @@ class MyServer {
             NASBunker = new File(args[3]);
             NASTarget = new File(args[4]);
             NAS_Status = "%NAS_ONLINE%";
-            File[] contents = NASSource.listFiles();
-            assert contents != null;
-            for (File f : contents) {
-                System.out.println(f.getName());
+
+            System.out.println("Starting NAS server");
+            String OS = System.getProperty("os.name").split(" ")[0];
+            System.out.println(OS);
+            if (OS.equals("Windows") ? !NASSource.exists() : !SearchMounts()) {
+                //RECOVERY CODE
+                System.out.println("Source is down. Would you like to\n1.Reconstruct Source from Bunker\n2. Reconstruct Source from Target\n3.Switch to Bunker\nPress any other key to exit");
+
+                int choice = in.nextInt();
+
+                switch (choice) {
+
+                    case 1:
+                        DisasterRecovery(NASBunker);
+                        break;
+                    case 2:
+                        DisasterRecovery(NASTarget);
+                        break;
+                    case 3:
+                        SourceDown = true;
+                        NASSource = NASBunker;
+                        System.out.println("Source down, switching to Bunker");
+                        break;
+                    default:
+                        System.exit(0);
+                }
+
             }
-            contents = null;
             AsyncUploader async = new AsyncUploader();
             async.start();
-            System.out.println("Starting NAS server");
-            if (!NASSource.exists()) {
-                SourceDown = true;
-                NASSource = NASBunker;
-                System.out.println("Source down, switching to Bunker");
-            }
             System.gc();
         } else {
             NAS_Status = "%NAS_OFFLINE%";
         }
         Connector con = new Connector(ss, so);
         con.start();
-
-
-        Scanner in = new Scanner(System.in);
         while (!exitstr.equals("exit")) {
             exitstr = in.nextLine();
         }

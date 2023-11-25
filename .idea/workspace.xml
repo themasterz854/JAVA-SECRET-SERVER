@@ -12,6 +12,20 @@
     <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MyServer/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
