@@ -19,6 +19,8 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
@@ -44,26 +46,29 @@ class NASReceiverDeleter extends Thread {
     public void run() {
 
         if (command.equals("%receive%")) {
-            System.out.println(NASfilelist);
             String[] NASFileArray = NASfilelist.split("\n");
             File[] NASFileObjects = new File[NASFileArray.length];
             int j;
+            long totalsize = 0;
             j = 0;
             for (String s : NASFileArray) {
-                File f;
+
                 for (File file : contents) {
+
                     if (file.getName().equals(s)) {
-                        f = new File(file.getAbsolutePath());
-                        NASFileObjects[j++] = f;
-                        break;
+                        try {
+                            FileInputStream fis = new FileInputStream(file);
+                            readlock.lock();
+                            totalsize += file.length();
+                            NASFileObjects[j++] = file;
+
+                            fis.close();
+                            break;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
-            }
-            long totalsize;
-            totalsize = 0;
-
-            for (File f : NASFileObjects) {
-                totalsize += f.length();
             }
 
             try {
@@ -76,6 +81,7 @@ class NASReceiverDeleter extends Thread {
                     byte[] sendData;
                     byte[] readbytes;
                     byte[] encryptedSendData;
+
                     try (FileInputStream fis = new FileInputStream(f)) {
                         DownloadDout.writeUTF(aes.encrypt("%NASFile%"));
                         DownloadDout.flush();
@@ -97,6 +103,7 @@ class NASReceiverDeleter extends Thread {
                             System.out.println("sent bytes " + read);
                             System.out.println(aes.decrypt(DownloadDin.readUTF()));
                         }
+
                     }
 
                     DownloadDout.writeUTF(aes.encrypt(Integer.toString(read)));
@@ -109,7 +116,7 @@ class NASReceiverDeleter extends Thread {
                     }
                     DownloadDout.writeUTF(aes.encrypt(hash.toString()));
                     DownloadDout.flush();
-                    sendData = readbytes = encryptedSendData = null;
+                    readlock.unlock();
                     System.gc();
                 }
             } catch (IOException | NoSuchAlgorithmException e) {
@@ -128,16 +135,20 @@ class NASReceiverDeleter extends Thread {
                             break;
                         }
                     }
-                    synchronized (filesynchronizer) {
+                    assert f != null;
+
+                    writelock.lock();
+                    f.delete();
+                    if (!(NASSource.equals(NASBunker))) {
+                        f = new File(NASBunker + "/" + f.getName());
                         f.delete();
-                        if (!(NASSource.equals(NASBunker))) {
-                            f = new File(NASBunker + "/" + f.getName());
-                            f.delete();
-                        }
-                        DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName() + "\n"));
-                        DownloadDout.flush();
                     }
-                    f = null;
+                    writelock.unlock();
+
+
+                    DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName() + "\n"));
+                    DownloadDout.flush();
+
                 }
                 DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED \n"));
                 DownloadDout.flush();
@@ -159,64 +170,59 @@ class NASUploader extends Thread {
 
     public void run() {
         int i;
-        synchronized (filesynchronizer) {
 
-            int n;
-            try {
-                n = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+        int n;
+        try {
+            n = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
 
-                for (i = 0; i < n; i++) {
-                    UploadDout.writeUTF(aes.encrypt("READ filessize"));
-                    UploadDout.flush();
-                    String filename = aes.decrypt(UploadDin.readUTF());
+            for (i = 0; i < n; i++) {
+                UploadDout.writeUTF(aes.encrypt("READ filessize"));
+                UploadDout.flush();
+                String filename = aes.decrypt(UploadDin.readUTF());
 
-                    File f = new File(NASSource + "/" + filename);
-                    File g;
-                    FileOutputStream gos = null;
-                    if (!(NASSource.equals(NASBunker))) {
-                        g = new File(NASBunker + "/" + filename);
-                        gos = new FileOutputStream(g);
+                File f = new File(NASSource + "/" + filename);
+                File g;
+                FileOutputStream gos = null;
+                if (!(NASSource.equals(NASBunker))) {
+                    g = new File(NASBunker + "/" + filename);
+                    gos = new FileOutputStream(g);
+                }
+                FileOutputStream fos = new FileOutputStream(f);
+
+                byte[] receivedData;
+                int received;
+                int actualreceived;
+                while (true) {
+                    actualreceived = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+                    if (actualreceived < 0) {
+                        break;
                     }
-                    FileOutputStream fos = new FileOutputStream(f);
-
-
-                    byte[] receivedData;
-                    int received;
-                    int actualreceived;
-                    while (true) {
-                        actualreceived = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
-                        if (actualreceived < 0) {
-                            break;
-                        }
-                        received = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
-                        receivedData = new byte[received];
-                        UploadDin.readFully(receivedData);
-                        receivedData = aes.decrypt(receivedData);
-                        System.gc();
-                        fos.write(receivedData);
-                        if (!(NASSource.equals(NASBunker))) {
-                            gos.write(receivedData);
-                        }
-                        System.out.println("received partial bytes" + actualreceived);
-                        UploadDout.writeUTF(aes.encrypt("ACK"));
-                        UploadDout.flush();
-                    }
-                    System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
-                    fos.close();
+                    received = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+                    receivedData = new byte[received];
+                    UploadDin.readFully(receivedData);
+                    receivedData = aes.decrypt(receivedData);
+                    System.gc();
+                    fos.write(receivedData);
                     if (!(NASSource.equals(NASBunker))) {
                         assert gos != null;
-                        gos.close();
+                        gos.write(receivedData);
                     }
-                    receivedData = null;
-                    f = g = null;
-                    fos = gos = null;
-                    System.out.println("received the file " + filename);
-                    System.gc();
+                    System.out.println("received partial bytes" + actualreceived);
+                    UploadDout.writeUTF(aes.encrypt("ACK"));
+                    UploadDout.flush();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
+                fos.close();
+                if (!(NASSource.equals(NASBunker))) {
+                    assert gos != null;
+                    gos.close();
+                }
+                System.gc();
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
     }
 }
 
@@ -291,9 +297,7 @@ class rsa {
             encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] secretMessageBytes = message.getBytes(StandardCharsets.UTF_8);
             byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
-            String encodedMessage = Base64.getEncoder().encodeToString(encryptedMessageBytes);
-            // System.out.println(encodedMessage);
-            return encodedMessage;
+            return Base64.getEncoder().encodeToString(encryptedMessageBytes);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
                  InvalidKeyException e) {
             throw new RuntimeException(e);
@@ -307,7 +311,6 @@ class rsa {
             encryptCipher = Cipher.getInstance("RSA");
             encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
-            // System.out.println(encodedMessage);
             return Base64.getEncoder().encode(encryptedMessageBytes);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
                  InvalidKeyException e) {
@@ -771,13 +774,11 @@ class Manager extends Thread {
                         } else if (NASfilelist.toString().equals("%NASupload%")) {
                             nasuploader = new NASUploader(UploadDout, UploadDin);
                             nasuploader.start();
-                            nasuploader = null;
                             continue;
                         }
                         String command = aes.decrypt(din.readUTF());
                         nasreceiverdeleter = new NASReceiverDeleter(contents, NASfilelist.toString(), command, DownloadDout, DownloadDin);
                         nasreceiverdeleter.start();
-                        nasreceiverdeleter = null;
 
                     } else if (str.equals("%file%")) {
                         int n = Integer.parseInt(aes.decrypt(din.readUTF()));
@@ -818,13 +819,12 @@ class Manager extends Thread {
                                 hash = new StringBuilder(din.readUTF());
                                 curr_RSdout.writeUTF(hash.toString());
                                 curr_RSdout.flush();
-                                receivedData = null;
                             }
                         }
                     } else if (str.equals("%NASupload%")) {
                         nasuploader = new NASUploader(UploadDout, UploadDin);
                         nasuploader.start();
-                        nasuploader = null;
+
 
                     } else if (str.equals("%list%")) {
                         count = 0;
@@ -847,14 +847,12 @@ class Manager extends Thread {
                             dout.flush();
                             count++;
                         }
-                        System.out.println("end of list");
                         dout.writeUTF(aes.encrypt("end of list"));
                         dout.flush();
                     }
                 } else {
                     chatter chat = new chatter(curr_RSdout, sc, RSdout);
                     chat.start();
-                    chat = null;
                    /* synchronized (synchronizer) {
                         data = str.split(" ");
                         if (data[0].equals("%chat%")) {
@@ -896,10 +894,9 @@ class Connector extends Thread {
     }
 
     public void digitalsignature(CustomSocket sc, Key clientpublickey) throws Exception {
-        //TEST AREA
+
         DataInputStream din = new DataInputStream(sc.getSocket().getInputStream());
         DataOutputStream dout = new DataOutputStream(sc.getSocket().getOutputStream());
-        System.out.println("AES key is " + aes.encryptionKey);
         MessageDigest keyhash = MessageDigest.getInstance("SHA-256");
         keyhash.update(aes.encryptionKey.getBytes());
         byte[] digest = keyhash.digest();
@@ -907,7 +904,6 @@ class Connector extends Thread {
         for (byte x : digest) {
             hashsource.append(String.format("%02x", x));
         }
-        System.out.println("HASH IS " + hashsource);
         String privatestring = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey);
         System.out.println(new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
         byte[] privateencryptedhashbytes = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey).getBytes(StandardCharsets.UTF_8);
@@ -1032,7 +1028,6 @@ class Connector extends Thread {
                         data = dec.decrypt(data);
                         filedata = data.split(" ");
                         if (filedata[0].equals(newusername)) {
-                            System.out.println("EXISTS");
                             dout.writeUTF(aes.encrypt("exists"));
                             dout.flush();
                             existflag = 1;
@@ -1083,7 +1078,7 @@ class Connector extends Thread {
                         dout.writeUTF(aes.encrypt("ok"));
 
                         res.start();
-                        System.out.println("Client connected");
+                        System.out.println("Client " + i + " connected");
                     } else {
                         dout.writeUTF(aes.encrypt("wrong username or password"));
                         dout.flush();
@@ -1114,17 +1109,20 @@ class AsyncUploader extends Thread {
         while (true) {
             try {
                 Thread.sleep(1000 * 10);
-                synchronized (filesynchronizer) {
-                    sourcecontents = NASSource.listFiles();
+
+                sourcecontents = NASSource.listFiles();
                     targetcontents = NASTarget.listFiles();
-                    System.out.println("Synchronizing files now");
-                    assert sourcecontents != null;
+
+                System.out.println("Synchronizing files now");
+
+                assert sourcecontents != null;
                     for (File f : sourcecontents) {
 
                         if (!f.exists() || f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
                             continue;
                         }
                         FileInputStream fis = new FileInputStream(f.getAbsolutePath());
+                        readlock.lock();
                         byte[] FileData = new byte[f.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) f.length()];
                         MessageDigest md1 = MessageDigest.getInstance("SHA-256");
                         hashsource = new StringBuilder();
@@ -1135,6 +1133,7 @@ class AsyncUploader extends Thread {
                         for (byte x : digest) {
                             hashsource.append(String.format("%02x", x));
                         }
+
                         fis.close();
                         file = new File(NASTarget + "/" + f.getName());
 
@@ -1155,12 +1154,12 @@ class AsyncUploader extends Thread {
                             hashtarget.append(String.format("%02x", x));
                         }
                         fis.close();
+
                         if (!hashsource.toString().contentEquals(hashtarget)) {
                             System.out.println("Hashes not matching " + f.getName());
                             file.delete();
                             Files.copy(f.toPath(), file.toPath());
                         }
-                        md1 = null;
                     }
 
                     assert targetcontents != null;
@@ -1174,11 +1173,8 @@ class AsyncUploader extends Thread {
                             f.delete();
                         }
                     }
-                }
+
                 System.out.println("Synchronization done");
-                sourcecontents = null;
-                targetcontents = null;
-                file = null;
                 System.gc();
             } catch (InterruptedException | NoSuchAlgorithmException | IOException e) {
                 throw new RuntimeException(e);
@@ -1257,18 +1253,14 @@ class AES256 {
         SecureRandom random = new SecureRandom();
         random.nextBytes(IV);
         System.out.println(Base64.getEncoder().withoutPadding().encodeToString(IV));
-        System.out.println("Original Text : " + plainText);
 
         byte[] cipherText = encrypt(plainText.getBytes(), key, IV);
-        System.out.println("Encrypted Text : " + Base64.getEncoder().encodeToString(cipherText));
 
         decryptedText = decrypt(cipherText, key);
-        System.out.println("DeCrypted Text : " + decryptedText);
     }
 
     public static byte[] encrypt(byte[] plaintext, SecretKey key, byte[] IV) throws Exception {
         // Get Cipher Instance
-        System.out.println("plaintext " + plaintext.length);
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 
         // Create SecretKeySpec
@@ -1285,13 +1277,11 @@ class AES256 {
         byte[] CipherTextFinal = new byte[GCM_IV_LENGTH + CipherText.length];
         System.arraycopy(IV, 0, CipherTextFinal, 0, GCM_TAG_LENGTH);
         System.arraycopy(CipherText, 0, CipherTextFinal, GCM_IV_LENGTH, CipherText.length);
-        System.out.println(CipherTextFinal.length);
         return CipherTextFinal;
     }
 
     public static String decrypt(byte[] cipherText, SecretKey key) throws Exception {
         // Get Cipher Instance
-        System.out.println(cipherText.length);
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         byte[] IV = new byte[GCM_IV_LENGTH];
         System.arraycopy(cipherText, 0, IV, 0, GCM_IV_LENGTH);
@@ -1316,9 +1306,14 @@ class AES256 {
 }
 
 class MyServer {
+
+    private static final ReentrantReadWriteLock RLock = new ReentrantReadWriteLock();
+    public static Lock writelock = RLock.writeLock();
+
+    public static Lock readlock = RLock.readLock();
     public static String NAS_Status;
     public final static Sync synchronizer = new Sync();
-    public final static Sync filesynchronizer = new Sync();
+
     public final static AES aes;
     public final static rsa rsaobj = new rsa();
     public final static AES256 aes256;
@@ -1377,7 +1372,7 @@ class MyServer {
     }
 
     static void DisasterRecovery(File RecoverFrom) throws IOException {
-        System.out.println("RECOVER PROCESS INITIATED");
+        System.out.println("RECOVERY PROCESS INITIATED");
         System.out.println("RECOVERING FROM " + RecoverFrom.getAbsolutePath());
         System.out.println("Enter path of new Source");
         Scanner in = new Scanner(System.in);
@@ -1393,11 +1388,11 @@ class MyServer {
             }
             System.out.println(f.getName() + " RECOVERED");
         }
-        contents = null;
         System.out.println("SOURCE RECONSTRUCTED");
     }
 
     public static void main(String[] args) throws Exception {
+
 
         CustomSocket[] so = new CustomSocket[10];
         String exitstr = "start";
@@ -1416,7 +1411,6 @@ class MyServer {
         if (args.length > 1 && args[1].equals("NAS")) {
             System.out.println(args[2] + " " + args[3] + " " + args[4]);
             NASSource = new File(args[2]);
-
             NASBunker = new File(args[3]);
             NASTarget = new File(args[4]);
             NAS_Status = "%NAS_ONLINE%";
