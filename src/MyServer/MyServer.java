@@ -44,116 +44,117 @@ class NASReceiverDeleter extends Thread {
     }
 
     public void run() {
-
-        if (command.equals("%receive%")) {
-            String[] NASFileArray = NASfilelist.split("\n");
-            File[] NASFileObjects = new File[NASFileArray.length];
-            int j;
-            long totalsize = 0;
-            j = 0;
-            for (String s : NASFileArray) {
-
-                for (File file : contents) {
-
-                    if (file.getName().equals(s)) {
-                        try {
-                            FileInputStream fis = new FileInputStream(file);
-                            readlock.lock();
-                            totalsize += file.length();
-                            NASFileObjects[j++] = file;
-
-                            fis.close();
-                            break;
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            }
-
-            try {
-                DownloadDout.writeUTF(aes.encrypt(Long.toString(totalsize)));
-                DownloadDout.flush();
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                for (File f : NASFileObjects) {
-
-                    int read;
-                    byte[] sendData;
-                    byte[] readbytes;
-                    byte[] encryptedSendData;
-
-                    try (FileInputStream fis = new FileInputStream(f)) {
-                        DownloadDout.writeUTF(aes.encrypt("%NASFile%"));
-                        DownloadDout.flush();
-                        DownloadDout.writeUTF(aes.encrypt(f.getName()));
-                        DownloadDout.flush();
-                        sendData = new byte[FileBufferSize];
-                        while ((read = fis.read(sendData)) > 0) {
-                            readbytes = new byte[read];
-                            System.arraycopy(sendData, 0, readbytes, 0, read);
-                            md.update(readbytes);
-                            encryptedSendData = aes.encrypt(readbytes);
-                            int encryptedsize = encryptedSendData.length;
-                            DownloadDout.writeUTF(aes.encrypt(Integer.toString(read)));
-                            DownloadDout.flush();
-                            DownloadDout.writeUTF(aes.encrypt(Integer.toString(encryptedsize)));
-                            DownloadDout.flush();
-                            DownloadDout.write(encryptedSendData, 0, encryptedsize);
-                            DownloadDout.flush();
-                            System.out.println("sent bytes " + read);
-                            System.out.println(aes.decrypt(DownloadDin.readUTF()));
-                        }
-
-                    }
-
-                    DownloadDout.writeUTF(aes.encrypt(Integer.toString(read)));
-                    DownloadDout.flush();
-                    System.out.println("sent the file");
-                    byte[] digest = md.digest();
-                    StringBuilder hash = new StringBuilder();
-                    for (byte x : digest) {
-                        hash.append(String.format("%02x", x));
-                    }
-                    DownloadDout.writeUTF(aes.encrypt(hash.toString()));
-                    DownloadDout.flush();
-                    readlock.unlock();
-                    System.gc();
-                }
-            } catch (IOException | NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
-
-
-        } else if (command.equals("%delete%")) {
-            try {
+        synchronized (CloseSync) {
+            if (command.equals("%receive%")) {
                 String[] NASFileArray = NASfilelist.split("\n");
+                File[] NASFileObjects = new File[NASFileArray.length];
+                int j;
+                long totalsize = 0;
+                j = 0;
                 for (String s : NASFileArray) {
-                    File f = null;
+
                     for (File file : contents) {
+
                         if (file.getName().equals(s)) {
-                            f = new File(file.getAbsolutePath());
-                            break;
+                            try {
+                                FileInputStream fis = new FileInputStream(file);
+                                readlock.lock();
+                                totalsize += file.length();
+                                NASFileObjects[j++] = file;
+
+                                fis.close();
+                                break;
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
-                    assert f != null;
-
-                    writelock.lock();
-                    f.delete();
-                    if (!(NASSource.equals(NASBunker))) {
-                        f = new File(NASBunker + "/" + f.getName());
-                        f.delete();
-                    }
-                    writelock.unlock();
-
-
-                    DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName() + "\n"));
-                    DownloadDout.flush();
-
                 }
-                DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED \n"));
-                DownloadDout.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+                try {
+                    DownloadDout.writeUTF(aes.encrypt(Long.toString(totalsize)));
+                    DownloadDout.flush();
+                    MessageDigest md = MessageDigest.getInstance("SHA-256");
+                    for (File f : NASFileObjects) {
+
+                        int read;
+                        byte[] sendData;
+                        byte[] readbytes;
+                        byte[] encryptedSendData;
+
+                        try (FileInputStream fis = new FileInputStream(f)) {
+                            DownloadDout.writeUTF(aes.encrypt("%NASFile%"));
+                            DownloadDout.flush();
+                            DownloadDout.writeUTF(aes.encrypt(f.getName()));
+                            DownloadDout.flush();
+                            sendData = new byte[FileBufferSize];
+                            while ((read = fis.read(sendData)) > 0) {
+                                readbytes = new byte[read];
+                                System.arraycopy(sendData, 0, readbytes, 0, read);
+                                md.update(readbytes);
+                                encryptedSendData = aes.encrypt(readbytes);
+                                int encryptedsize = encryptedSendData.length;
+                                DownloadDout.writeUTF(aes.encrypt(Integer.toString(read)));
+                                DownloadDout.flush();
+                                DownloadDout.writeUTF(aes.encrypt(Integer.toString(encryptedsize)));
+                                DownloadDout.flush();
+                                DownloadDout.write(encryptedSendData, 0, encryptedsize);
+                                DownloadDout.flush();
+                                System.out.println("sent bytes " + read);
+                                System.out.println(aes.decrypt(DownloadDin.readUTF()));
+                            }
+
+                        }
+
+                        DownloadDout.writeUTF(aes.encrypt(Integer.toString(read)));
+                        DownloadDout.flush();
+                        System.out.println("sent the file");
+                        byte[] digest = md.digest();
+                        StringBuilder hash = new StringBuilder();
+                        for (byte x : digest) {
+                            hash.append(String.format("%02x", x));
+                        }
+                        DownloadDout.writeUTF(aes.encrypt(hash.toString()));
+                        DownloadDout.flush();
+                        readlock.unlock();
+                        System.gc();
+                    }
+                } catch (IOException | NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            } else if (command.equals("%delete%")) {
+                try {
+                    String[] NASFileArray = NASfilelist.split("\n");
+                    for (String s : NASFileArray) {
+                        File f = null;
+                        for (File file : contents) {
+                            if (file.getName().equals(s)) {
+                                f = new File(file.getAbsolutePath());
+                                break;
+                            }
+                        }
+                        assert f != null;
+
+                        writelock.lock();
+                        f.delete();
+                        if (!(NASSource.equals(NASBunker))) {
+                            f = new File(NASBunker + "/" + f.getName());
+                            f.delete();
+                        }
+                        writelock.unlock();
+
+
+                        DownloadDout.writeUTF(aes.encrypt("Deleted file " + f.getName() + "\n"));
+                        DownloadDout.flush();
+
+                    }
+                    DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED \n"));
+                    DownloadDout.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -173,51 +174,53 @@ class NASUploader extends Thread {
 
         int n;
         try {
-            n = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+            synchronized (CloseSync) {
+                n = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
 
-            for (i = 0; i < n; i++) {
-                UploadDout.writeUTF(aes.encrypt("READ filessize"));
-                UploadDout.flush();
-                String filename = aes.decrypt(UploadDin.readUTF());
+                for (i = 0; i < n; i++) {
+                    UploadDout.writeUTF(aes.encrypt("READ filessize"));
+                    UploadDout.flush();
+                    String filename = aes.decrypt(UploadDin.readUTF());
 
-                File f = new File(NASSource + "/" + filename);
-                File g;
-                FileOutputStream gos = null;
-                if (!(NASSource.equals(NASBunker))) {
-                    g = new File(NASBunker + "/" + filename);
-                    gos = new FileOutputStream(g);
-                }
-                FileOutputStream fos = new FileOutputStream(f);
-
-                byte[] receivedData;
-                int received;
-                int actualreceived;
-                while (true) {
-                    actualreceived = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
-                    if (actualreceived < 0) {
-                        break;
+                    File f = new File(NASSource + "/" + filename);
+                    File g;
+                    FileOutputStream gos = null;
+                    if (!(NASSource.equals(NASBunker))) {
+                        g = new File(NASBunker + "/" + filename);
+                        gos = new FileOutputStream(g);
                     }
-                    received = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
-                    receivedData = new byte[received];
-                    UploadDin.readFully(receivedData);
-                    receivedData = aes.decrypt(receivedData);
-                    System.gc();
-                    fos.write(receivedData);
+                    FileOutputStream fos = new FileOutputStream(f);
+
+                    byte[] receivedData;
+                    int received;
+                    int actualreceived;
+                    while (true) {
+                        actualreceived = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+                        if (actualreceived < 0) {
+                            break;
+                        }
+                        received = Integer.parseInt(aes.decrypt(UploadDin.readUTF()));
+                        receivedData = new byte[received];
+                        UploadDin.readFully(receivedData);
+                        receivedData = aes.decrypt(receivedData);
+                        System.gc();
+                        fos.write(receivedData);
+                        if (!(NASSource.equals(NASBunker))) {
+                            assert gos != null;
+                            gos.write(receivedData);
+                        }
+                        System.out.println("received partial bytes" + actualreceived);
+                        UploadDout.writeUTF(aes.encrypt("ACK"));
+                        UploadDout.flush();
+                    }
+                    System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
+                    fos.close();
                     if (!(NASSource.equals(NASBunker))) {
                         assert gos != null;
-                        gos.write(receivedData);
+                        gos.close();
                     }
-                    System.out.println("received partial bytes" + actualreceived);
-                    UploadDout.writeUTF(aes.encrypt("ACK"));
-                    UploadDout.flush();
+                    System.gc();
                 }
-                System.out.println("receiving hash " + aes.decrypt(UploadDin.readUTF()));
-                fos.close();
-                if (!(NASSource.equals(NASBunker))) {
-                    assert gos != null;
-                    gos.close();
-                }
-                System.gc();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -781,6 +784,7 @@ class Manager extends Thread {
                         nasreceiverdeleter.start();
 
                     } else if (str.equals("%file%")) {
+                        synchronized (CloseSync) {
                         int n = Integer.parseInt(aes.decrypt(din.readUTF()));
                         for (i = 0; i < n; i++) {
                             synchronized (synchronizer) {
@@ -821,11 +825,10 @@ class Manager extends Thread {
                                 curr_RSdout.flush();
                             }
                         }
+                        }
                     } else if (str.equals("%NASupload%")) {
                         nasuploader = new NASUploader(UploadDout, UploadDin);
                         nasuploader.start();
-
-
                     } else if (str.equals("%list%")) {
                         count = 0;
                         for (i = 0; count < numberofsockets[0]; i++) {
@@ -1109,73 +1112,75 @@ class AsyncUploader extends Thread {
         while (true) {
             try {
                 Thread.sleep(1000 * 10);
+                synchronized (CloseSync) {
+                    synchronized (DRSync) {
+                        sourcecontents = NASSource.listFiles();
+                        targetcontents = NASTarget.listFiles();
 
-                sourcecontents = NASSource.listFiles();
-                    targetcontents = NASTarget.listFiles();
+                        System.out.println("Synchronizing files now");
 
-                System.out.println("Synchronizing files now");
+                        assert sourcecontents != null;
+                        for (File f : sourcecontents) {
 
-                assert sourcecontents != null;
-                    for (File f : sourcecontents) {
+                            if (!f.exists() || f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
+                                continue;
+                            }
+                            FileInputStream fis = new FileInputStream(f.getAbsolutePath());
+                            readlock.lock();
+                            byte[] FileData = new byte[f.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) f.length()];
+                            MessageDigest md1 = MessageDigest.getInstance("SHA-256");
+                            hashsource = new StringBuilder();
+                            while (fis.read(FileData) != -1) {
+                                md1.update(FileData);
+                            }
+                            byte[] digest = md1.digest();
+                            for (byte x : digest) {
+                                hashsource.append(String.format("%02x", x));
+                            }
 
-                        if (!f.exists() || f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
-                            continue;
+                            fis.close();
+                            file = new File(NASTarget + "/" + f.getName());
+
+                            if (!file.exists()) {
+                                Files.copy(f.toPath(), file.toPath());
+                                System.out.println("Copying new file " + f.getName());
+                            }
+                            FileData = new byte[file.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) file.length()];
+                            md1 = MessageDigest.getInstance("SHA-256");
+                            fis = new FileInputStream(file.getAbsolutePath());
+                            hashtarget = new StringBuilder();
+                            while (fis.read(FileData) != -1) {
+                                md1.update(FileData);
+
+                            }
+                            digest = md1.digest();
+                            for (byte x : digest) {
+                                hashtarget.append(String.format("%02x", x));
+                            }
+                            fis.close();
+
+                            if (!hashsource.toString().contentEquals(hashtarget)) {
+                                System.out.println("Hashes not matching " + f.getName());
+                                file.delete();
+                                Files.copy(f.toPath(), file.toPath());
+                            }
                         }
-                        FileInputStream fis = new FileInputStream(f.getAbsolutePath());
-                        readlock.lock();
-                        byte[] FileData = new byte[f.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) f.length()];
-                        MessageDigest md1 = MessageDigest.getInstance("SHA-256");
-                        hashsource = new StringBuilder();
-                        while (fis.read(FileData) != -1) {
-                            md1.update(FileData);
-                        }
-                        byte[] digest = md1.digest();
-                        for (byte x : digest) {
-                            hashsource.append(String.format("%02x", x));
-                        }
 
-                        fis.close();
-                        file = new File(NASTarget + "/" + f.getName());
-
-                        if (!file.exists()) {
-                            Files.copy(f.toPath(), file.toPath());
-                            System.out.println("Copying new file " + f.getName());
-                        }
-                        FileData = new byte[file.length() > 512 * 1024 * 1024 ? 512 * 1024 * 1024 : (int) file.length()];
-                        md1 = MessageDigest.getInstance("SHA-256");
-                        fis = new FileInputStream(file.getAbsolutePath());
-                        hashtarget = new StringBuilder();
-                        while (fis.read(FileData) != -1) {
-                            md1.update(FileData);
-
-                        }
-                        digest = md1.digest();
-                        for (byte x : digest) {
-                            hashtarget.append(String.format("%02x", x));
-                        }
-                        fis.close();
-
-                        if (!hashsource.toString().contentEquals(hashtarget)) {
-                            System.out.println("Hashes not matching " + f.getName());
-                            file.delete();
-                            Files.copy(f.toPath(), file.toPath());
+                        assert targetcontents != null;
+                        for (File f : targetcontents) {
+                            if (f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
+                                continue;
+                            }
+                            file = new File(NASSource + "/" + f.getName());
+                            if (f.exists() && !file.exists()) {
+                                System.out.println("Deleting file " + f.getName());
+                                f.delete();
+                            }
                         }
                     }
-
-                    assert targetcontents != null;
-                    for (File f : targetcontents) {
-                        if (f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
-                            continue;
-                        }
-                        file = new File(NASSource + "/" + f.getName());
-                        if (f.exists() && !file.exists()) {
-                            System.out.println("Deleting file " + f.getName());
-                            f.delete();
-                        }
-                    }
-
-                System.out.println("Synchronization done");
-                System.gc();
+                    System.out.println("Synchronization done");
+                    System.gc();
+                }
             } catch (InterruptedException | NoSuchAlgorithmException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -1207,25 +1212,31 @@ class chatter extends Thread {
     public void run() {
         try {
             String str;
+            label:
             while (true) {
-
                 str = aes.decrypt(cdin.readUTF());
                 System.out.println(str);
                 synchronized (synchronizer) {
                     String[] data = str.split(" ");
-                    if (data[0].equals("%chat%")) {
-                        int chatid = Integer.parseInt(data[1]);
-                        currchatdout = rsdout[chatid];
-                    } else if (data[0].equals("%others%")) {
-                        data = str.split("%others% ");
-                        cdout.writeUTF(aes.encrypt(data[1]));
-                        cdout.flush();
-                    } else {
+                    switch (data[0]) {
+                        case "%chat%":
+                            int chatid = Integer.parseInt(data[1]);
+                            currchatdout = rsdout[chatid];
+                            break;
+                        case "%others%":
+                            data = str.split("%others% ");
+                            cdout.writeUTF(aes.encrypt(data[1]));
+                            cdout.flush();
+                            break;
+                        case "%exit%":
+                            break label;
+                        default:
                     /*if (encryptflag == 1)
                         currchatdout.writeUTF(aes.encrypt((sc.getid() + " " + en.encrypt(str))));
                     else*/
-                        currchatdout.writeUTF(aes.encrypt((sc.getid() + " " + str)));
-                        currchatdout.flush();
+                            currchatdout.writeUTF(aes.encrypt((sc.getid() + " " + str)));
+                            currchatdout.flush();
+                            break;
                     }
                 }
             }
@@ -1313,7 +1324,8 @@ class MyServer {
     public static Lock readlock = RLock.readLock();
     public static String NAS_Status;
     public final static Sync synchronizer = new Sync();
-
+    public final static Sync DRSync = new Sync();
+    public final static Sync CloseSync = new Sync();
     public final static AES aes;
     public final static rsa rsaobj = new rsa();
     public final static AES256 aes256;
@@ -1340,6 +1352,33 @@ class MyServer {
         }
     }
 
+    static void RecoveryMode(String reason) throws IOException {
+
+        if (reason.equals("Source down")) {
+
+            System.out.println("Source is down.\n1.Reconstruct Source from Bunker\n2.Reconstruct Source from Target\n3.Switch to Bunker\nPress any other key to exit");
+        } else
+            System.out.println("Entering Forced Recovery.\n1.Reconstruct Source from Bunker\n2.Reconstruct Source from Target\n3.Switch to Bunker\nPress any other key to exit");
+        Scanner in = new Scanner(System.in);
+        int choice = in.nextInt();
+        synchronized (DRSync) {
+            switch (choice) {
+                case 1:
+                    DisasterRecovery(NASBunker, reason);
+                    break;
+                case 2:
+                    DisasterRecovery(NASTarget, reason);
+                    break;
+                case 3:
+                    SourceDown = true;
+                    NASSource = NASBunker;
+                    System.out.println("Source down, switching to Bunker");
+                    break;
+                default:
+                    System.exit(0);
+            }
+        }
+    }
     static boolean SearchMounts() throws FileNotFoundException {
         boolean result = false;
         Scanner scan = new Scanner(new File("/proc/mounts"));
@@ -1371,14 +1410,27 @@ class MyServer {
         }
     }
 
-    static void DisasterRecovery(File RecoverFrom) throws IOException {
+    static void DisasterRecovery(File RecoverFrom, String reason) throws IOException {
         System.out.println("RECOVERY PROCESS INITIATED");
         System.out.println("RECOVERING FROM " + RecoverFrom.getAbsolutePath());
-        System.out.println("Enter path of new Source");
-        Scanner in = new Scanner(System.in);
-        NASSource = new File(in.nextLine());
-        File[] contents = RecoverFrom.listFiles();
+        File[] contents;
+        if (reason.equals("Source down")) {
+            System.out.println("Enter path of new Source");
+            Scanner in = new Scanner(System.in);
+            NASSource = new File(in.nextLine());
+        }
 
+        System.out.println("Deleting files currently in Source");
+        contents = NASSource.listFiles();
+        assert contents != null;
+        for (File f : contents) {
+            if (f.getName().equals("System Volume Information") || f.getName().equals(".Trash-1000") || f.getName().equals("lost+found")) {
+                continue;
+            }
+            f.delete();
+        }
+
+        contents = RecoverFrom.listFiles();
         assert contents != null;
         for (File f : contents) {
             if (f.isDirectory()) {
@@ -1406,7 +1458,9 @@ class MyServer {
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0]));
         System.out.println("Server has started on port " + args[0]);
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
-
+        Connector con = new Connector(ss, so);
+        con.start();
+        AsyncUploader async = new AsyncUploader();
         Scanner in = new Scanner(System.in);
         if (args.length > 1 && args[1].equals("NAS")) {
             System.out.println(args[2] + " " + args[3] + " " + args[4]);
@@ -1419,41 +1473,23 @@ class MyServer {
             String OS = System.getProperty("os.name").split(" ")[0];
             System.out.println(OS);
             if (OS.equals("Windows") ? !NASSource.exists() : !SearchMounts()) {
-                //RECOVERY CODE
-                System.out.println("Source is down. Would you like to\n1.Reconstruct Source from Bunker\n2. Reconstruct Source from Target\n3.Switch to Bunker\nPress any other key to exit");
-
-                int choice = in.nextInt();
-
-                switch (choice) {
-
-                    case 1:
-                        DisasterRecovery(NASBunker);
-                        break;
-                    case 2:
-                        DisasterRecovery(NASTarget);
-                        break;
-                    case 3:
-                        SourceDown = true;
-                        NASSource = NASBunker;
-                        System.out.println("Source down, switching to Bunker");
-                        break;
-                    default:
-                        System.exit(0);
-                }
-
+                RecoveryMode("Source down");
             }
-            AsyncUploader async = new AsyncUploader();
             async.start();
             System.gc();
         } else {
             NAS_Status = "%NAS_OFFLINE%";
         }
-        Connector con = new Connector(ss, so);
-        con.start();
         while (!exitstr.equals("exit")) {
+            System.out.println("Type DR for Forced Recovery");
             exitstr = in.nextLine();
+            if (exitstr.equals("DR")) {
+                RecoveryMode("Forced Recovery");
+            }
         }
-        in.close();
-        System.exit(0);
+        synchronized (CloseSync) {
+            in.close();
+            System.exit(0);
+        }
     }
 }
