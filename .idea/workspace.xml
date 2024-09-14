@@ -9,11 +9,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="tried to solve the file locking problem, unsuccessful, works somehow&#10;edge case solved - receiving file cannot be deleted until client has recieved the file">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="87058106-4089-4a60-9f5a-77211bd30e14" name="Changes" comment="main thread will now wait for transfers to complete before closing &#10;via synchronized CloseSync">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/SERVER_jar/SERVER.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AES256.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/AsyncUploader.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Connector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/CustomSocket.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Decryptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Encryptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Manager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/MyServer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASReceiverDeleter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/NASUploader.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/Sync.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/chatter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/JAVA-SECRET-SERVER/MyServer/rsa.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MyServer/MyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MyServer/MyServer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -379,7 +391,15 @@
       <option name="project" value="LOCAL" />
       <updated>1707063113030</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="main thread will now wait for transfers to complete before closing &#10;via synchronized CloseSync">
+      <option name="closed" value="true" />
+      <created>1714830557345</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1714830557345</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -422,7 +442,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="properly fixed new account creation" />
     <MESSAGE value="added AES support for all communication &#10;need to add AES support for files" />
     <MESSAGE value="public key exchange successful" />
     <MESSAGE value="added file transfer with AES" />
@@ -447,7 +466,8 @@
     <MESSAGE value="added disaster recovery capability for source&#10;need to add ternary choices for all byte buffers to optimise transfer of data." />
     <MESSAGE value="tried to solve the file locking problem, unsuccessful" />
     <MESSAGE value="tried to solve the file locking problem, unsuccessful, works somehow&#10;edge case solved - receiving file cannot be deleted until client has recieved the file" />
-    <option name="LAST_COMMIT_MESSAGE" value="tried to solve the file locking problem, unsuccessful, works somehow&#10;edge case solved - receiving file cannot be deleted until client has recieved the file" />
+    <MESSAGE value="main thread will now wait for transfers to complete before closing &#10;via synchronized CloseSync" />
+    <option name="LAST_COMMIT_MESSAGE" value="main thread will now wait for transfers to complete before closing &#10;via synchronized CloseSync" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />

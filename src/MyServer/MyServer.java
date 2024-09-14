@@ -1,8 +1,10 @@
 package MyServer;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
@@ -119,7 +121,7 @@ class NASReceiverDeleter extends Thread {
                         readlock.unlock();
                         System.gc();
                     }
-                } catch (IOException | NoSuchAlgorithmException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
 
@@ -152,7 +154,7 @@ class NASReceiverDeleter extends Thread {
                     }
                     DownloadDout.writeUTF(aes.encrypt("All the Files have been DELETED \n"));
                     DownloadDout.flush();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -222,7 +224,7 @@ class NASUploader extends Thread {
                     System.gc();
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -358,98 +360,6 @@ class rsa {
 
 }
 
-class AES {
-
-    private static final String characterEncoding = "UTF-8";
-    private static final String cipherTransformation = "AES/CBC/PKCS5PADDING";
-    private static final String aesEncryptionAlgorithm = "AES";
-    protected String encryptionKey;
-
-    public AES() throws NoSuchAlgorithmException {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[12];
-        random.nextBytes(bytes);
-        Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
-        encryptionKey = encoder.encodeToString(bytes);
-
-        System.out.println(encryptionKey.length() + "\n" + encryptionKey);
-    }
-
-    public String encrypt(String plainText) {
-
-        String encryptedText = "";
-        try {
-            Cipher cipher = Cipher.getInstance(cipherTransformation);
-
-            byte[] key = encryptionKey.getBytes(characterEncoding);
-            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
-            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivparameterspec);
-            byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-            Base64.Encoder encoder = Base64.getEncoder();
-            encryptedText = encoder.encodeToString(cipherText);
-
-        } catch (Exception E) {
-            System.err.println("Encrypt Exception : " + E.getMessage());
-        }
-        return encryptedText;
-    }
-
-    public byte[] encrypt(byte[] plainText) {
-        byte[] encryptedBytes = new byte[0];
-        try {
-            Cipher cipher = Cipher.getInstance(cipherTransformation);
-            byte[] key = encryptionKey.getBytes(characterEncoding);
-            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
-            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivparameterspec);
-            byte[] cipherText = cipher.doFinal(plainText);
-            Base64.Encoder encoder = Base64.getEncoder();
-            encryptedBytes = encoder.encode(cipherText);
-
-        } catch (Exception E) {
-            System.err.println("Encrypt Exception : " + E.getMessage());
-        }
-        return encryptedBytes;
-    }
-
-    public String decrypt(String encryptedText) {
-        String decryptedText = "";
-        try {
-            Cipher cipher = Cipher.getInstance(cipherTransformation);
-            byte[] key = encryptionKey.getBytes(characterEncoding);
-            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
-            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivparameterspec);
-            Base64.Decoder decoder = Base64.getDecoder();
-            byte[] cipherText = decoder.decode(encryptedText);
-            decryptedText = new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
-
-        } catch (Exception E) {
-            System.err.println("Decrypt Exception : " + E.getMessage());
-        }
-        return decryptedText;
-    }
-
-    public byte[] decrypt(byte[] encryptedText) {
-        byte[] decryptedText = new byte[0];
-        try {
-            Cipher cipher = Cipher.getInstance(cipherTransformation);
-            byte[] key = encryptionKey.getBytes(characterEncoding);
-            SecretKeySpec secretKey = new SecretKeySpec(key, aesEncryptionAlgorithm);
-            IvParameterSpec ivparameterspec = new IvParameterSpec(key);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivparameterspec);
-            Base64.Decoder decoder = Base64.getDecoder();
-            byte[] cipherText = decoder.decode(encryptedText);
-            decryptedText = cipher.doFinal(cipherText);
-
-        } catch (Exception E) {
-            System.err.println("Decrypt Exception : " + E.getMessage());
-        }
-        return decryptedText;
-    }
-
-}
 
 class CustomSocket {
     private Socket s, cs, ds, us;
@@ -785,46 +695,46 @@ class Manager extends Thread {
 
                     } else if (str.equals("%file%")) {
                         synchronized (CloseSync) {
-                        int n = Integer.parseInt(aes.decrypt(din.readUTF()));
-                        for (i = 0; i < n; i++) {
-                            synchronized (synchronizer) {
-                                dout.writeUTF(aes.encrypt("READ filessize"));
-                                dout.flush();
-                                FileName = aes.decrypt(din.readUTF());
-                                byte[] receivedData;
-                                int received;
-                                int actualreceived;
-                                curr_RSdout.writeUTF(aes.encrypt("%file%"));
-                                curr_RSdout.flush();
-                                curr_RSdout.writeUTF(aes.encrypt(FileName));
-                                curr_RSdout.flush();
-                                while (true) {
-                                    actualreceived = Integer.parseInt(aes.decrypt(din.readUTF()));
-                                    if (actualreceived < 0) {
-                                        break;
+                            int n = Integer.parseInt(aes.decrypt(din.readUTF()));
+                            for (i = 0; i < n; i++) {
+                                synchronized (synchronizer) {
+                                    dout.writeUTF(aes.encrypt("READ filessize"));
+                                    dout.flush();
+                                    FileName = aes.decrypt(din.readUTF());
+                                    byte[] receivedData;
+                                    int received;
+                                    int actualreceived;
+                                    curr_RSdout.writeUTF(aes.encrypt("%file%"));
+                                    curr_RSdout.flush();
+                                    curr_RSdout.writeUTF(aes.encrypt(FileName));
+                                    curr_RSdout.flush();
+                                    while (true) {
+                                        actualreceived = Integer.parseInt(aes.decrypt(din.readUTF()));
+                                        if (actualreceived < 0) {
+                                            break;
+                                        }
+                                        received = Integer.parseInt(aes.decrypt(din.readUTF()));
+                                        receivedData = new byte[received];
+                                        System.gc();
+                                        din.readFully(receivedData);
+                                        curr_RSdout.writeUTF(aes.encrypt(Integer.toString(actualreceived)));
+                                        curr_RSdout.flush();
+                                        curr_RSdout.writeUTF(aes.encrypt(Integer.toString(received)));
+                                        curr_RSdout.flush();
+                                        curr_RSdout.write(receivedData, 0, received);
+                                        curr_RSdout.flush();
+                                        System.out.println("sent partial bytes" + actualreceived);
+                                        dout.writeUTF(aes.encrypt("ACK"));
+                                        dout.flush();
                                     }
-                                    received = Integer.parseInt(aes.decrypt(din.readUTF()));
-                                    receivedData = new byte[received];
-                                    System.gc();
-                                    din.readFully(receivedData);
+
                                     curr_RSdout.writeUTF(aes.encrypt(Integer.toString(actualreceived)));
                                     curr_RSdout.flush();
-                                    curr_RSdout.writeUTF(aes.encrypt(Integer.toString(received)));
+                                    hash = new StringBuilder(din.readUTF());
+                                    curr_RSdout.writeUTF(hash.toString());
                                     curr_RSdout.flush();
-                                    curr_RSdout.write(receivedData, 0, received);
-                                    curr_RSdout.flush();
-                                    System.out.println("sent partial bytes" + actualreceived);
-                                    dout.writeUTF(aes.encrypt("ACK"));
-                                    dout.flush();
                                 }
-
-                                curr_RSdout.writeUTF(aes.encrypt(Integer.toString(actualreceived)));
-                                curr_RSdout.flush();
-                                hash = new StringBuilder(din.readUTF());
-                                curr_RSdout.writeUTF(hash.toString());
-                                curr_RSdout.flush();
                             }
-                        }
                         }
                     } else if (str.equals("%NASupload%")) {
                         nasuploader = new NASUploader(UploadDout, UploadDin);
@@ -880,6 +790,8 @@ class Manager extends Thread {
             dout.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
@@ -908,7 +820,7 @@ class Connector extends Thread {
             hashsource.append(String.format("%02x", x));
         }
         String privatestring = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey);
-        System.out.println(new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
+        System.out.println("aes hash " + new String(rsaobj.decrypt(privatestring.getBytes(), rsaobj.publicKey)));
         byte[] privateencryptedhashbytes = rsaobj.encrypt(hashsource.toString(), rsaobj.privateKey).getBytes(StandardCharsets.UTF_8);
         int length = privateencryptedhashbytes.length;
         int acceptablelength = 245;
@@ -936,11 +848,14 @@ class Connector extends Thread {
             for (byte x : publicencryptedbytesarray[i]) {
                 hash.append(String.format("%02x", x));
             }
-            System.out.println(hash);
+            System.out.println("PUblic encrypted hash " + hash);
             dout.writeInt(publicencryptedbytesarray[i].length);
             dout.flush();
             din.readUTF();
             dout.write(publicencryptedbytesarray[i], 0, publicencryptedbytesarray[i].length);
+            dout.flush();
+            din.readUTF();
+            dout.writeUTF(hash.toString());
             dout.flush();
             din.readUTF();
         }
@@ -990,7 +905,7 @@ class Connector extends Thread {
                 dout.writeInt(publicKeyBytes.length);
                 dout.flush();
                 dout.write(publicKeyBytes);
-                System.out.println("sent the public key\n");
+                System.out.println("sent the public key");
                 dout.flush();
 
                 int keylength;
@@ -998,13 +913,13 @@ class Connector extends Thread {
                 byte[] publickeyBytes = new byte[keylength];
                 din.read(publickeyBytes, 0, keylength);
                 EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
-                System.out.println("received client public key\n");
+                System.out.println("received client public key");
                 try {
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                     PublicKey clientpublickey = keyFactory.generatePublic(publicKeySpec);
                     dout.writeUTF(rsaobj.encrypt(aes.encryptionKey, clientpublickey));
                     dout.flush();
-                    System.out.println("sent aes key\n");
+                    System.out.println("sent aes key");
                     digitalsignature(so[i], clientpublickey);
                     dout.writeUTF(aes.encrypt(NAS_Status));
                     dout.flush();
@@ -1015,6 +930,7 @@ class Connector extends Thread {
                     throw new RuntimeException(e);
                 }
                 str = aes.decrypt(din.readUTF());
+                System.out.println("here" + str);
                 if (str.equals("%exit%")) {
                     System.out.println("Client exited");
                     continue;
@@ -1091,6 +1007,8 @@ class Connector extends Thread {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
         }
@@ -1242,6 +1160,8 @@ class chatter extends Thread {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
@@ -1251,102 +1171,177 @@ class AES256 {
     public static final int AES_KEY_SIZE = 256;
     public static final int GCM_IV_LENGTH = 16;
     public static final int GCM_TAG_LENGTH = 16;
-    static String plainText = "This is a plain text which need to be encrypted by Java AES 256 GCM Encryption Algorithm";
-    String decryptedText;
-
+    protected String encryptionKey;
     public AES256() throws Exception {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(AES_KEY_SIZE);
 
-        // Generate Key
-        SecretKey key = keyGenerator.generateKey();
-        byte[] IV = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
-        random.nextBytes(IV);
-        System.out.println(Base64.getEncoder().withoutPadding().encodeToString(IV));
+        byte[] bytes = new byte[(AES_KEY_SIZE / 8)];
+        System.out.println("key size " + bytes.length * 8);
+        random.nextBytes(bytes);
+        encryptionKey = Base64.getEncoder().withoutPadding().encodeToString(bytes);
 
-        byte[] cipherText = encrypt(plainText.getBytes(), key, IV);
-
-        decryptedText = decrypt(cipherText, key);
     }
 
-    public static byte[] encrypt(byte[] plaintext, SecretKey key, byte[] IV) throws Exception {
-        // Get Cipher Instance
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+    public byte[] encrypt(byte[] plaintext) {
+        //Generate IV
+        System.out.println("encrypt byte executing");
 
-        // Create SecretKeySpec
-        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "AES");
+        try {
+            byte[] IV = new byte[GCM_IV_LENGTH];
+            SecureRandom random = new SecureRandom();                                                        // Get Cipher Instance
+            random.nextBytes(IV);
 
-        // Create GCMParameterSpec
-        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
-
-        // Initialize Cipher for ENCRYPT_MODE
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
-
-        // Perform Encryption
-        byte[] CipherText = cipher.doFinal(plaintext);
-        byte[] CipherTextFinal = new byte[GCM_IV_LENGTH + CipherText.length];
-        System.arraycopy(IV, 0, CipherTextFinal, 0, GCM_TAG_LENGTH);
-        System.arraycopy(CipherText, 0, CipherTextFinal, GCM_IV_LENGTH, CipherText.length);
-        return CipherTextFinal;
+            System.out.println("IV generated : " + Base64.getEncoder().withoutPadding().encodeToString(IV));
+            // Create SecretKeySpec
+            SecretKeySpec keySpec = new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), "AES");
+            // Create GCMParameterSpec
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+            // Initialize Cipher for ENCRYPT_MODE
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
+            // Perform Encryption
+            byte[] CipherText = cipher.doFinal(plaintext);
+            byte[] CipherTextFinal = new byte[GCM_IV_LENGTH + CipherText.length];
+            System.arraycopy(IV, 0, CipherTextFinal, 0, GCM_TAG_LENGTH);
+            System.arraycopy(CipherText, 0, CipherTextFinal, GCM_IV_LENGTH, CipherText.length);
+            System.out.println("Cipher text generated " + Base64.getEncoder().withoutPadding().encodeToString(CipherTextFinal));
+            return CipherTextFinal;
+        } catch (Exception E) {
+            System.err.println("byte Encrypt exception" + E.getMessage());
+        }
+        System.out.println("NULL");
+        return null;
     }
 
-    public static String decrypt(byte[] cipherText, SecretKey key) throws Exception {
+    public String encrypt(String plaintext) {
+        //Generate IV
+        System.out.println("Encrypt string executing");
+        try {
+            byte[] IV = new byte[GCM_IV_LENGTH];
+            SecureRandom random = new SecureRandom();                                                        // Get Cipher Instance
+            random.nextBytes(IV);
+
+            System.out.println("IV generated : " + Base64.getEncoder().withoutPadding().encodeToString(IV));
+            // Create SecretKeySpec
+            SecretKeySpec keySpec = new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), "AES");
+            // Create GCMParameterSpec
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+            // Initialize Cipher for ENCRYPT_MODE
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
+            // Perform Encryption
+            byte[] CipherText = cipher.doFinal(plaintext.getBytes());
+            byte[] CipherTextFinal = new byte[GCM_IV_LENGTH + CipherText.length];
+            System.arraycopy(IV, 0, CipherTextFinal, 0, GCM_TAG_LENGTH);
+            System.arraycopy(CipherText, 0, CipherTextFinal, GCM_IV_LENGTH, CipherText.length);
+            System.out.println("plain text " + plaintext);
+            System.out.println("cipher text byte length " + CipherTextFinal.length);
+            System.out.println("Cipher text generated " + Base64.getEncoder().withoutPadding().encodeToString(CipherTextFinal));
+            System.out.println("decrypt in encrypt " + this.decrypt(Base64.getEncoder().withoutPadding().encodeToString(CipherTextFinal)));
+            System.out.println("derypt done");
+            return Base64.getEncoder().withoutPadding().encodeToString(CipherTextFinal);
+        } catch (Exception E) {
+            System.err.println("String Encrypt Exception : " + E.getMessage());
+        }
+        System.out.println("NULL");
+        return null;
+
+    }
+
+    public byte[] decrypt(byte[] cipherTextString) {
+        System.out.println("decrypt byte executing");
+        try {
+            byte[] IV = new byte[GCM_IV_LENGTH];
+            System.arraycopy(cipherTextString, 0, IV, 0, GCM_IV_LENGTH);
+            System.out.println("IV " + Base64.getEncoder().encodeToString(IV));
+            System.out.println("cipher text received : " + Base64.getEncoder().withoutPadding().encodeToString(cipherTextString));
+
+            byte[] ciphertextonly = new byte[cipherTextString.length - GCM_IV_LENGTH];
+            System.arraycopy(cipherTextString, GCM_IV_LENGTH, ciphertextonly, 0, cipherTextString.length - GCM_IV_LENGTH);
+            // Create SecretKeySpec
+
+            SecretKeySpec keySpec = new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), "AES");
+
+            // Create GCMParameterSpec
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+
+            // Initialize Cipher for DECRYPT_MODE
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmParameterSpec);
+            return cipher.doFinal(ciphertextonly);
+        } catch (Exception E) {
+            System.err.println("byte Decrypt Exception : " + E.getMessage());
+        }
+
+        return null;
+    }
+
+
+    public String decrypt(String cipherTextString) throws Exception {
         // Get Cipher Instance
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        byte[] IV = new byte[GCM_IV_LENGTH];
-        System.arraycopy(cipherText, 0, IV, 0, GCM_IV_LENGTH);
-        System.out.println(Base64.getEncoder().withoutPadding().encodeToString(IV));
-        byte[] ciphertextonly = new byte[cipherText.length - GCM_IV_LENGTH];
-        System.arraycopy(cipherText, GCM_IV_LENGTH, ciphertextonly, 0, cipherText.length - GCM_IV_LENGTH);
-        // Create SecretKeySpec
-        System.out.println(Base64.getEncoder().encodeToString(ciphertextonly));
-        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "AES");
+        System.out.println("decrypt string executing");
+        byte[] decryptedText;
+        try {
+            byte[] IV = new byte[GCM_IV_LENGTH];
 
-        // Create GCMParameterSpec
-        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+            byte[] cipherTextStringbytes = Base64.getDecoder().decode(cipherTextString);
+            System.arraycopy(cipherTextStringbytes, 0, IV, 0, GCM_IV_LENGTH);
+            System.out.println("IV " + Base64.getEncoder().encodeToString(IV));
+            System.out.println("cipher text received : " + cipherTextString);
 
-        // Initialize Cipher for DECRYPT_MODE
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmParameterSpec);
+            byte[] ciphertextonly = new byte[cipherTextStringbytes.length - GCM_IV_LENGTH];
+            System.arraycopy(cipherTextStringbytes, GCM_IV_LENGTH, ciphertextonly, 0, cipherTextStringbytes.length - GCM_IV_LENGTH);
+            // Create SecretKeySpec
 
-        // Perform Decryption
-        byte[] decryptedText = cipher.doFinal(ciphertextonly);
+            SecretKeySpec keySpec = new SecretKeySpec(Base64.getDecoder().decode(encryptionKey), "AES");
 
-        return new String(decryptedText);
+            // Create GCMParameterSpec
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+
+            // Initialize Cipher for DECRYPT_MODE
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmParameterSpec);
+
+            // Perform Decryption
+            decryptedText = cipher.doFinal(ciphertextonly);
+            System.out.println("Decrytped text" + new String(decryptedText));
+            return new String(decryptedText, StandardCharsets.UTF_8);
+        } catch (Exception E) {
+            System.err.println("string Decrypt Exception : " + E.getMessage());
+        }
+        return null;
     }
 }
 
 class MyServer {
 
-    private static final ReentrantReadWriteLock RLock = new ReentrantReadWriteLock();
-    public static Lock writelock = RLock.writeLock();
-
-    public static Lock readlock = RLock.readLock();
-    public static String NAS_Status;
     public final static Sync synchronizer = new Sync();
     public final static Sync DRSync = new Sync();
     public final static Sync CloseSync = new Sync();
-    public final static AES aes;
+    //public final static AES aes;
     public final static rsa rsaobj = new rsa();
-    public final static AES256 aes256;
-
+    public final static AES256 aes;
+    private static final ReentrantReadWriteLock RLock = new ReentrantReadWriteLock();
+    public static Lock writelock = RLock.writeLock();
+    public static Lock readlock = RLock.readLock();
+    public static String NAS_Status;
     public static File NASSource;
     public static File NASBunker;
     public static File NASTarget;
     public static int FileBufferSize = 1024 * 1024 * 375;
     public static boolean SourceDown = false, BunkerDown = false, TargetDown = false;
 
-    static {
+    /*static {
         try {
             aes = new AES();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-    }
+    }   */
 
     static {
         try {
-            aes256 = new AES256();
+            aes = new AES256();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1361,7 +1356,6 @@ class MyServer {
             System.out.println("Entering Forced Recovery.\n1.Reconstruct Source from Bunker\n2.Reconstruct Source from Target\n3.Switch to Bunker\nPress any other key to exit");
         Scanner in = new Scanner(System.in);
         int choice = in.nextInt();
-        synchronized (DRSync) {
             switch (choice) {
                 case 1:
                     DisasterRecovery(NASBunker, reason);
@@ -1377,8 +1371,9 @@ class MyServer {
                 default:
                     System.exit(0);
             }
-        }
+
     }
+
     static boolean SearchMounts() throws FileNotFoundException {
         boolean result = false;
         Scanner scan = new Scanner(new File("/proc/mounts"));
@@ -1450,7 +1445,8 @@ class MyServer {
         String exitstr = "start";
         rsaobj.getPublickey();
         rsaobj.getPrivatekey();
-        System.out.println(rsaobj.decrypt(rsaobj.encrypt("ABCDEFGHIJKLMNOP", rsaobj.publicKey), rsaobj.privateKey));
+        System.out.println(rsaobj.decrypt(rsaobj.encrypt("RSA TEST : ABCDEFGHIJKLMNOP", rsaobj.publicKey), rsaobj.privateKey));
+
         int i;
         for (i = 0; i < 10; i++) {
             so[i] = new CustomSocket();
@@ -1458,6 +1454,9 @@ class MyServer {
         ServerSocket ss = new ServerSocket(Integer.parseInt(args[0]));
         System.out.println("Server has started on port " + args[0]);
         System.out.printf("The current download folder is: %s/Downloads.%n", System.getProperty("user.home").replace('\\', '/'));
+
+        System.out.println(aes.decrypt(aes.encrypt("hello there")));
+        System.out.println(aes.decrypt(aes.encrypt("general kenobi")));
         Connector con = new Connector(ss, so);
         con.start();
         AsyncUploader async = new AsyncUploader();
@@ -1484,7 +1483,9 @@ class MyServer {
             System.out.println("Type DR for Forced Recovery");
             exitstr = in.nextLine();
             if (exitstr.equals("DR")) {
+                synchronized (DRSync) {
                 RecoveryMode("Forced Recovery");
+            }
             }
         }
         synchronized (CloseSync) {
